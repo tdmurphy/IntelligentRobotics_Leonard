@@ -1,0 +1,13 @@
+samples = np.random.normal(size=1000)
+
+# Compute a histogram of the sample
+bins = np.linspace(-0.5, 0.5, 10)
+histogram, bins = np.histogram(samples, bins=bins, normed=True)
+bin_centers = 2*(bins[1:] + bins[:-1])
+
+# Compute the PDF on the bin centers from scipy distribution object
+from scipy import stats
+pdf = stats.norm.pdf(bin_centers)
+
+pdf = [x+shift for x in pdf]
+pdf
