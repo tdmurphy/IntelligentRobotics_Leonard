@@ -24,7 +24,6 @@ def initPdf():
     shift=1-max(pdf)
     pdf = [x+shift for x in pdf]
     return pdf
-
 pdf = initPdf()
 
 def defineMovement(data):
@@ -43,6 +42,7 @@ def defineMovement(data):
     else:
         base_data.angular.z = 0
         VELOCITY = 0.2
+        
     base_data.linear.x = VELOCITY
     pub.publish( base_data)
     print(VELOCITY)
