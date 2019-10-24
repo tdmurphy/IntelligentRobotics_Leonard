@@ -1,2 +1,2 @@
-assignment1
+assignment1:pf_localisation
 -DCATKIN_DEVEL_PREFIX=/data/private/robot/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/data/private/robot/catkin_ws/install -G Unix Makefiles

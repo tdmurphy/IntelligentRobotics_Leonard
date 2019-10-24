@@ -132,6 +132,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/data/private/robot/catkin_ws/build/gtest/cmake_install.cmake")
   include("/data/private/robot/catkin_ws/build/assignment1/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/pf_localisation/cmake_install.cmake")
 
 endif()
 
