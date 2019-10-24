@@ -14,7 +14,7 @@ VELOCITY = 0.2
 GRANULARITY = 9
 MAX_RANGE = 2.5
 DETECTING_RANGE = 1
-TURN_INCREMENT
+TURN_INCREMENT = 0.3
 
 def initPdf():
     samples = np.random.normal(size=1000)
