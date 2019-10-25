@@ -47,6 +47,13 @@
 /data/private/robot/catkin_ws/build/assignment1/CMakeFiles/std_msgs_generate_messages_py.dir
 /data/private/robot/catkin_ws/build/assignment1/CMakeFiles/install/local.dir
 /data/private/robot/catkin_ws/build/assignment1/CMakeFiles/test.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/install/strip.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/edit_cache.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/list_install_components.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/test.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/install/local.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/rebuild_cache.dir
+/data/private/robot/catkin_ws/build/exploration/CMakeFiles/install.dir
 /data/private/robot/catkin_ws/build/pf_localisation/CMakeFiles/list_install_components.dir
 /data/private/robot/catkin_ws/build/pf_localisation/CMakeFiles/tf2_msgs_generate_messages_nodejs.dir
 /data/private/robot/catkin_ws/build/pf_localisation/CMakeFiles/install/strip.dir
