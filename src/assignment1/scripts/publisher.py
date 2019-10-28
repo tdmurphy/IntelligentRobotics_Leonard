@@ -8,7 +8,7 @@ from scipy import stats
 
 pub = rospy.Publisher('cmd_vel', Twist, queue_size=100)
 base_data = Twist()
-granularity=9
+granularity=5
 
 def initPdf():
     samples = np.random.normal(size=1000)
