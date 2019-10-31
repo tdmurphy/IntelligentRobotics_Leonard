@@ -16,6 +16,9 @@ class PFLocaliser(PFLocaliserBase):
         super(PFLocaliser, self).__init__()
         
         # ----- Set motion model parameters
+        self.ODOM_ROTATION_NOISE=1
+        self.ODOM_TRANSLATION_NOISE=1
+        self.ODOM_DRIFT_NOISE=1
  
         # ----- Sensor model parameters
         self.NUMBER_PREDICTED_READINGS = 20     # Number of readings to predict
@@ -35,7 +38,29 @@ class PFLocaliser(PFLocaliserBase):
         :Return:
             | (geometry_msgs.msg.PoseArray) poses of the particles
         """
-        pass
+	#print("Entering to initialise cloud")
+	poses= PoseArray()  #initialising pose array
+	for num in range (0,self.NUMBER_PREDICTED_READINGS):
+		p= Pose()	#initialising pose
+
+		xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.1)	#noise calculations
+		yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.1)
+		zNoise=0
+		random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.1)
+
+		p.position.x=initialpose.pose.pose.position.x + xNoise		#pose positions+noise
+		p.position.y=initialpose.pose.pose.position.y + yNoise
+		p.position.z=initialpose.pose.pose.position.z + zNoise
+		p.orientation=rotateQuaternion(initialpose.pose.pose.orientation,random_angular_noise)
+		
+		poses.poses.append(p)		
+		#print(num, p.orientation)
+        	#print(self.INIT_X, self.INIT_Y,self.INIT_Z,self.INIT_HEADING)
+	#poses.header.seq   left it blank
+	poses.header.stamp=rospy.Time.now()		#defining the header of the pose array
+	poses.header.frame_id="/map"
+	#print("Returning after initialising cloud")
+       return poses
 
  
     
