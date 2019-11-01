@@ -10,26 +10,28 @@ base_data = Twist()
 
 #constants 
 VELOCITY = 0.2
-GRANULARITY = 10
+GRANULARITY = 15
 DETECTING_RANGE = 1.0
 base_data = Twist()
 
 def findWall(data):
     print("Attempting to find wall")
     base_data.linear.x = VELOCITY
-    if base_data.angular.z == 0:
-        base_data.angular.z = 0.3
+    if base_data.angular.z <= 0:
+        base_data.angular.z = 0.4
 
 def hardRight(data):
     print("hard right")
-    base_data.angular.z = -0.5
+    base_data.angular.z = -0.6
+    for(x,y) in data:
+        if(x <= 0.5):
+            base_data.angular.z = -1
     print(base_data.angular.z)
 
 def defineMovement(data):
-    #hug the wall (tranvels to the right)
     thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
-    increment = int(len(zipped)/(GRANULARITY/2))
+    increment = int(len(zipped)/(GRANULARITY/3))
     farLeftReadings = zipped[0:increment]
     midReadings = zipped[increment*2:increment*3]
     farRightReadings = zipped[increment*4:]
@@ -44,7 +46,7 @@ def defineMovement(data):
 
     for (x,y) in frontLeftReadings:
         if(x<=y):
-            leftDetecting = True
+            frontLeftDetecting = True
 
     for (x,y) in midReadings:
         if(x<=y):
@@ -63,13 +65,17 @@ def defineMovement(data):
     if(not(midDetecting) and not(frontLeftDetecting) and not(farLeftDetecting)):
         findWall(data.data)
     elif(midDetecting):
-        base_data.linear.x=0
+        base_data.linear.x = 0
         if(base_data.angular.z >= 0):
-            hardRight(data.data)
-    elif(midDetecting and frontLeftDetecting and not(farLeftDetecting)):
-        base_data.linear.x=0
-        if(base_data.angular.z >= 0):
-            hardRight(data.data)
+            hardRight(midReadings)
+   # elif(frontLeftDetecting and not(farLeftDetecting)):
+   #     frontLeftDetection = False
+   #     for(x,y) in frontLeftReadings:
+   #         if(x <= 0.9):
+   #             frontLeftDetection = True
+   #     if(frontLeftDetection and base_data.angular.z != -0.4):
+   #         print("Obstacle in my front left region")
+   #         base_data.angular.z = -0.4
     else:
         print("Im following a wall")
         farLeftCorrection = False
@@ -85,7 +91,7 @@ def defineMovement(data):
         print("Far L - " + str(farLeftCorrection) + " Front L - " +str(frontLeftCorrection))
         base_data.linear.x = VELOCITY/2
         if ((farLeftCorrection or frontLeftCorrection) and base_data.angular.z==0):
-            base_data.angular.z = -0.2
+            base_data.angular.z = -0.3
             print("correcting course right")
         else:
             base_data.linear.x = VELOCITY

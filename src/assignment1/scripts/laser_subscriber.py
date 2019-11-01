@@ -5,19 +5,20 @@ from sensor_msgs.msg import LaserScan
 import numpy as np
 
 laserPublisher = rospy.Publisher('laser_reading',Float32MultiArray,queue_size=100)
-granularity = 10
+granularity = 15
 
 def callback(data):
     rangeMeans = np.array([])
 
     for r in np.array_split(np.array(data.ranges), granularity):
         r[np.isnan(r)]=data.range_max
-        rospy.loginfo(np.average(r))
         rangeMeans = np.concatenate((rangeMeans, np.array([np.average(r)])), axis=None)
 
     rangeMeans = np.flip(rangeMeans, 0)
 
-    #rospy.loginfo(rangeMeans)
+    rospy.loginfo("------------------------------------------------------------")
+    rospy.loginfo(rangeMeans)
+    rospy.loginfo("------------------------------------------------------------")
 
     pub_message = Float32MultiArray()
     pub_message.data = rangeMeans
