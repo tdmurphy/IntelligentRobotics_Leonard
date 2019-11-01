@@ -60,14 +60,16 @@ def defineMovement(data):
         if(x<=y):
             farLeftDetecting = True
 
-    #front and right out of range = travelling away from wall (move back to wall)
-    if(not(midDetecting) and not(frontLeftDetecting) and (not farLeftDetecting)):
+    if(not(midDetecting) and not(frontLeftDetecting) and not(farLeftDetecting)):
         findWall(data.data)
     elif(midDetecting):
         base_data.linear.x=0
         if(base_data.angular.z >= 0):
             hardRight(data.data)
-    #right detecting, front at max range = following the wall (good)
+    elif(midDetecting and frontLeftDetecting and not(farLeftDetecting)):
+        base_data.linear.x=0
+        if(base_data.angular.z >= 0):
+            hardRight(data.data)
     else:
         print("Im following a wall")
         farLeftCorrection = False
@@ -80,7 +82,7 @@ def defineMovement(data):
             if(x <= 0.85):
                 frontLeftCorrection = True
         
-        print("Far L - " + str(farLeftCorrection) + "Front L - " +str(frontLeftCorrection))
+        print("Far L - " + str(farLeftCorrection) + " Front L - " +str(frontLeftCorrection))
         base_data.linear.x = VELOCITY/2
         if ((farLeftCorrection or frontLeftCorrection) and base_data.angular.z==0):
             base_data.angular.z = -0.2
