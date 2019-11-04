@@ -62,8 +62,37 @@ class PFLocaliser(PFLocaliserBase):
 	#print("Returning after initialising cloud")
        return poses
 
- 
-    
+
+
+    def rank_particles(self, scan):
+	#function to find the particles witht the highest weights 
+    	all_poses = {}
+    	for pose in self.particlecloud:
+   		weight = sensor_model.get_weight(self, scan, pose)
+    		all_poses[pose] = weight
+    	#sort the dictionary 
+    	ranked_poses = sorted(all_poses.items(), reverse=True)
+    	return ranked_poses
+    			
+    def averageParticles(particles):
+	#helper function to average a particle cloud 
+	new_pose = Pose() 
+	num_particles = particles.size()
+			
+	avX, avY, avZ, avW = 0 
+	for particle in particles:
+		avX += particle.pose.pose.position.x
+		avY += particle.pose.pose.position.y
+		avZ += particle.pose.pose.position.z
+		avW += particle.pose.pose.orientation 
+	avX = avX / num_particles
+	avY = avY / num_particles
+	avZ = avZ / num_particles
+	avW = avW / num_particles
+			
+	new_pose.pose.pose.x, new_pose.pose.pose.y, new_pose.pose.pose.z, new_pose.pose.pose.w = avX, avY, avZ, avW
+	return new_pose
+		
     def update_particle_cloud(self, scan):
         """
         This should use the supplied laser scan to update the current
@@ -73,7 +102,13 @@ class PFLocaliser(PFLocaliserBase):
             | scan (sensor_msgs.msg.LaserScan): laser scan to use for update
 
          """
-        pass
+	#TODO: update the particle cloud 
+	#TODO: sample from the particle cloud 
+	
+	ranked = rank_particles(self, scan)
+        best_particle = ranked[0] 
+        
+	pass
 
     def estimate_pose(self):
         """
@@ -91,4 +126,19 @@ class PFLocaliser(PFLocaliserBase):
         :Return:
             | (geometry_msgs.msg.Pose) robot's estimated pose.
          """
+	new_pose = Pose()
+         
+         
+        #Solution 1: take the 'best' particle 
+        new_pose = best_particle
+         
+        #Solution 2: take the average of all particles
+        new_pose = averageParticles(self.particlecloud)
+					         
+         
+        #solution 3: find clusters in the particle and take the average of the densest cluster 
+		
+	return new_pose		
         pass
+
+
