@@ -19,6 +19,7 @@ CORRECT_COURSE = -0.3
 CORRECT_COURSE_RANGE = 0.75
 base_data = Twist()
 BEGUN_EXPLORATION = False
+START_POSITION = None
 STOP_MOVING = False
 COUNTER = 0
 
@@ -37,6 +38,7 @@ def hardRight(data):
     print(base_data.angular.z)
 
 def defineMovement(data):
+    global STOP_MOVING
     thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
     increment = int(len(zipped)/(GRANULARITY/3))
@@ -110,17 +112,24 @@ def defineMovement(data):
 
     if(not STOP_MOVING):
         pub.publish(base_data)
+    else:
+        base_data.linear.x = 0
+        base_data.angular.z = 0
+        pub.publish(base_data)
 
 def determineIfComplete(data):
     global BEGUN_EXPLORATION
     global COUNTER
+    global STOP_MOVING
+    global START_POSITION
     odomPose = data.pose.pose.position
     if(odomPose.x != 0 and odomPose.y != 0 and BEGUN_EXPLORATION == False):
         print("I have begun my exploration")
         BEGUN_EXPLORATION = True
-    elif(BEGUN_EXPLORATION ==  True and COUNTER >= 5):
-        xBoundary = np.absolute(odomPose.x) + VELOCITY
-        yBoundary = np.absolute(odomPose.y) + VELOCITY
+        START_POSITION = odomPose
+    elif(BEGUN_EXPLORATION ==  True and COUNTER >= 50):
+        xBoundary = np.absolute(odomPose.x - START_POSITION.x)
+        yBoundary = np.absolute(odomPose.y - START_POSITION.y)
 
         if(xBoundary <= 0.5 and yBoundary <= 0.5):
             print("I've reached my start position")
