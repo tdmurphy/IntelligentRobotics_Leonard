@@ -21,7 +21,7 @@ base_data = Twist()
 BEGUN_EXPLORATION = False
 START_POSITION = None
 STOP_MOVING = False
-COUNTER = 0
+START_POSITION_BOUNDARY = 0.5
 
 def findWall(data):
     print("Attempting to find wall")
@@ -119,7 +119,6 @@ def defineMovement(data):
 
 def determineIfComplete(data):
     global BEGUN_EXPLORATION
-    global COUNTER
     global STOP_MOVING
     global START_POSITION
     odomPose = data.pose.pose.position
@@ -127,15 +126,16 @@ def determineIfComplete(data):
         print("I have begun my exploration")
         BEGUN_EXPLORATION = True
         START_POSITION = odomPose
-    elif(BEGUN_EXPLORATION ==  True and COUNTER >= 50):
-        xBoundary = np.absolute(odomPose.x - START_POSITION.x)
-        yBoundary = np.absolute(odomPose.y - START_POSITION.y)
+    elif(BEGUN_EXPLORATION ==  True):
+        totalMovement = np.absolute((odomPose.x - START_POSITION.x) + (odomPose.y - START_POSITION.y))
 
-        if(xBoundary <= 0.5 and yBoundary <= 0.5):
-            print("I've reached my start position")
-            STOP_MOVING = True
+        if(totalMovement > START_POSITION_BOUNDARY*2):
+            xBoundary = np.absolute(odomPose.x - START_POSITION.x)
+            yBoundary = np.absolute(odomPose.y - START_POSITION.y)
 
-    COUNTER+=1
+            if(xBoundary <= START_POSITION_BOUNDARY and yBoundary <= START_POSITION_BOUNDARY):
+                print("I've reached my start position")
+                STOP_MOVING = True
 
     
 
