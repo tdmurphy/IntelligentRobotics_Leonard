@@ -1,6 +1,7 @@
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist,Point,PoseWithCovariance,Pose
 from std_msgs.msg import Float32MultiArray
+from nav_msgs.msg import Odometry
 import numpy as np
 import math
 from scipy import stats
@@ -9,75 +10,58 @@ pub = rospy.Publisher('cmd_vel', Twist, queue_size=100)
 base_data = Twist()
 
 #constants 
-IDEAL_DISTANCE = 0.5
 VELOCITY = 0.2
-GRANULARITY = 5
-MAX_RANGE = 3
-DETECTING_RANGE = 1.75
-TURN_INCREMENT = 0.3
-
-def initPdf():
-    samples = np.random.normal(size=1000)
-    # Compute a histogram of the sample
-    bins = np.linspace(-0.5, 0.5, GRANULARITY+1)
-    histogram, bins = np.histogram(samples, bins=bins, normed=True)
-    bin_centers = 2*(bins[1:] + bins[:-1])
-    # Compute the PDF on the bin centers from scipy distribution object
-    pdf = stats.norm.pdf(bin_centers)
-    shift=1-max(pdf)
-    pdf = [x+shift for x in pdf]
-    return pdf
-
-pdf = initPdf()
-weights = pdf[:int(len(pdf)/2)] + [0] + [x*-1 for x in pdf[(int(len(pdf)/2))+1:]]
+GRANULARITY = 15
+DETECTING_RANGE = 1.0
+FIND_WALL_TURN = 0.4
+HARD_RIGHT = -0.6
+CORRECT_COURSE = -0.3
+CORRECT_COURSE_RANGE = 0.75
 base_data = Twist()
-wasFollowing = False
-timesTurned = 0
+BEGUN_EXPLORATION = False
+START_POSITION = None
+STOP_MOVING = False
+COUNTER = 0
 
 def findWall(data):
-  ##  global timesTurned
-  ##  global wasFollowing
-  ##  if(wasFollowing and timesTurned < 10):
-  ##      print("continue following to right")
-  ##      base_data.linear.x = VELOCITY
-  ##      base_data.angular.z = -5
-  ##      timesTurned+=1
-  ##  else:
-  ##  timesTurned = 0
-    wasFollowing = False
     print("Attempting to find wall")
     base_data.linear.x = VELOCITY
-    base_data.angular.z = -3 #np.dot(weights,data)
-
-def hardLeft(data):
-    print("hard left")
-    base_data.angular.z = 5
-    print(base_data.angular.z)
+    if base_data.angular.z <= 0:
+        base_data.angular.z = FIND_WALL_TURN
 
 def hardRight(data):
     print("hard right")
-    base_data.angular.z = -5
+    base_data.angular.z = HARD_RIGHT
+    for(x,y) in data:
+        if(x <= 0.5):
+            base_data.angular.z = -1
     print(base_data.angular.z)
 
 def defineMovement(data):
-    #hug the wall (tranvels to the right)
-    thresholds = np.full(len(data.data), 1.5)
+    global STOP_MOVING
+    thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
-    increment = int(len(zipped)/5)
-    leftReadings = zipped[0:increment]
-    midReadings = zipped[increment*2:increment*3]
-    rightReadings = zipped[increment*4:]
+    increment = int(len(zipped)/(GRANULARITY/3))
+
+    farLeftReadings = zipped[0:increment]
     frontLeftReadings = zipped[increment:increment*2]
+    midReadings = zipped[increment*2:increment*3]
     frontRightReadings = zipped[increment*3:increment*4]
+    farRightReadings = zipped[increment*4:]
     
-    leftDetecting = False
+    farLeftDetecting = False
+    frontLeftDetecting = False
     midDetecting = False
-    rightDetecting = False
+    frontRightDetecting = False
     farRightDetecting = False
+
+    for (x,y) in farLeftReadings:
+        if(x<=y):
+            farLeftDetecting = True
 
     for (x,y) in frontLeftReadings:
         if(x<=y):
-            leftDetecting = True
+            frontLeftDetecting = True
 
     for (x,y) in midReadings:
         if(x<=y):
@@ -86,48 +70,79 @@ def defineMovement(data):
     for (x,y) in frontRightReadings:
         if(x<=y):
             rightDetecting = True
-    for (x,y) in rightReadings:
+
+    for (x,y) in farRightReadings:
         if(x<=y):
             farRightDetecting = True
 
-    #front and right out of range = travelling away from wall (move back to wall)
-    if(not(midDetecting) and not(rightDetecting) and (not farRightDetecting)):
+    if(not(midDetecting) and not(frontLeftDetecting) and not(farLeftDetecting)):
         findWall(data.data)
-    #front detecting, right at max range = about to hit the wall (turn left to get parallel to the wall)
-    ##elif(midDetecting and not(rightDetecting)):
-    ##    base_data.linear.x=0
-    ##    if(base_data.angular.z == 0):
-    ##        hardLeft(data.data)
-    #right and front detecting = corner (turn left)
     elif(midDetecting):
-        base_data.linear.x=0
-        if(base_data.angular.z == 0):
-            hardLeft(data.data)
-
-    #right detecting, front at max range = following the wall (good)
+        base_data.linear.x = 0
+        if(base_data.angular.z >= 0):
+            hardRight(midReadings)
+   # elif(frontLeftDetecting and not(farLeftDetecting)):
+   #     frontLeftDetection = False
+   #     for(x,y) in frontLeftReadings:
+   #         if(x <= 0.9):
+   #             frontLeftDetection = True
+   #     if(frontLeftDetection and base_data.angular.z != -0.4):
+   #         print("Obstacle in my front left region")
+   #         base_data.angular.z = -0.4
     else:
         print("Im following a wall")
-        global wasFollowing
-        global timesTurned
-        wasFollowing  = True
-        timesTurned = 0
-        print(rightReadings[0][0])
+        farLeftCorrection = False
+        for(x,y) in farLeftReadings:
+            if(x <= CORRECT_COURSE_RANGE):
+                farLeftCorrection = True
+
+        frontLeftCorrection = False
+        for(x,y) in frontLeftReadings:
+            if(x <= (CORRECT_COURSE_RANGE + 0.1)):
+                frontLeftCorrection = True
+        
+        print("Far L - " + str(farLeftCorrection) + " Front L - " +str(frontLeftCorrection))
         base_data.linear.x = VELOCITY/2
-        if (rightReadings[0][0] <= 1 and base_data.angular.z==0):
-            base_data.angular.z = 0.5
-            print("correcting course left")
-        ##elif (rightReadings[0][0] >= 0.75 and rightReadings[0][0] <=0.8 and base_data.angular.z==0):
-         ###   base_data.angular.z = -0.5
-         ##   print("correcting course right")
+        if ((farLeftCorrection or frontLeftCorrection) and base_data.angular.z==0):
+            base_data.angular.z = CORRECT_COURSE
+            print("correcting course right")
         else:
             base_data.linear.x = VELOCITY
             base_data.angular.z = 0
-    pub.publish(base_data)
+
+    if(not STOP_MOVING):
+        pub.publish(base_data)
+    else:
+        base_data.linear.x = 0
+        base_data.angular.z = 0
+        pub.publish(base_data)
+
+def determineIfComplete(data):
+    global BEGUN_EXPLORATION
+    global COUNTER
+    global STOP_MOVING
+    global START_POSITION
+    odomPose = data.pose.pose.position
+    if(odomPose.x != 0 and odomPose.y != 0 and BEGUN_EXPLORATION == False):
+        print("I have begun my exploration")
+        BEGUN_EXPLORATION = True
+        START_POSITION = odomPose
+    elif(BEGUN_EXPLORATION ==  True and COUNTER >= 50):
+        xBoundary = np.absolute(odomPose.x - START_POSITION.x)
+        yBoundary = np.absolute(odomPose.y - START_POSITION.y)
+
+        if(xBoundary <= 0.5 and yBoundary <= 0.5):
+            print("I've reached my start position")
+            STOP_MOVING = True
+
+    COUNTER+=1
+
     
 
 def talker():
     rospy.init_node('Mover', anonymous=True)
-    rospy.Subscriber('laser_reading',Float32MultiArray,defineMovement)
+    rospy.Subscriber('laser_reading',Float32MultiArray, defineMovement)
+    rospy.Subscriber('odom',Odometry, determineIfComplete)
     # rate = rospy.Rate(10) # 10hz
 
     rospy.spin()
