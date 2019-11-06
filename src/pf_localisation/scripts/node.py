@@ -88,6 +88,7 @@ class ParticleFilterLocalisationNode(object):
         """
         self._latest_scan = scan
         if self._initial_pose_received:
+	    print "POSE"
             if  self._sufficientMovementDetected(self._particle_filter.estimatedpose):
                 # ----- Publish the new pose
                 self._amcl_pose_publisher.publish(self._particle_filter.estimatedpose)
