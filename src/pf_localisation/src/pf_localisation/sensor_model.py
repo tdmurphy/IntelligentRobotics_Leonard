@@ -163,6 +163,8 @@ class SensorModel(object):
 
 	if(math.isnan(pz)):
 		pz=0
+
+
     
         assert(pz <= 1.0)
         assert(pz >= 0.0)
