@@ -1,4 +1,4 @@
-image: clean_map_resized.png
+image: clean_map_resized.PGM
 resolution: 0.050000
 origin: [0.000000, 0.000000, 0.000000]
 negate: 0

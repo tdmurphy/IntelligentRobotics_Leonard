@@ -11,11 +11,13 @@ base_data = Twist()
 
 #constants 
 VELOCITY = 0.2
-GRANULARITY = 15
-DETECTING_RANGE = 1.0
-FIND_WALL_TURN = 0.4
+GRANULARITY = 19
+DETECTING_RANGE = 1.1
+FIND_WALL_TURN = 0.35
 HARD_RIGHT = -0.6
 CORRECT_COURSE = -0.3
+CLOSE_CORRECT_COURSE = 0.65
+FAR_CORRECT_COURSE = 0.75
 CORRECT_COURSE_RANGE = 0.75
 base_data = Twist()
 BEGUN_EXPLORATION = False
@@ -40,6 +42,9 @@ def hardRight(data):
 
 def defineMovement(data):
     global STOP_MOVING
+    global CORRECT_COURSE_RANGE
+    global FAR_CORRECT_COURSE
+    global CLOSE_CORRECT_COURSE
     thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
     increment = int(len(zipped)/(GRANULARITY/3))
@@ -55,6 +60,8 @@ def defineMovement(data):
     midDetecting = False
     frontRightDetecting = False
     farRightDetecting = False
+    frontRightCrash = False
+    farRightCrash = False 
 
     for (x,y) in farLeftReadings:
         if(x<=y):
@@ -69,12 +76,16 @@ def defineMovement(data):
             midDetecting = True
 
     for (x,y) in frontRightReadings:
-        if(x<=y):
-            rightDetecting = True
+        if(x<=2):
+            frontRightDetecting = True
 
     for (x,y) in farRightReadings:
         if(x<=y):
             farRightDetecting = True
+
+    for (x,y) in farRightReadings:
+        if(x<=0.75):
+            farRightCrash = True
 
     if(not(midDetecting) and not(frontLeftDetecting) and not(farLeftDetecting)):
         findWall(data.data)
@@ -82,6 +93,9 @@ def defineMovement(data):
         base_data.linear.x = 0
         if(base_data.angular.z >= 0):
             hardRight(midReadings)
+    elif(farRightCrash):
+	if(base_data.angular.z>=0):
+	    hardRight(midReadings)
    # elif(frontLeftDetecting and not(farLeftDetecting)):
    #     frontLeftDetection = False
    #     for(x,y) in frontLeftReadings:
@@ -92,6 +106,14 @@ def defineMovement(data):
    #         base_data.angular.z = -0.4
     else:
         print("Im following a wall")
+
+	if(frontRightDetecting):
+            print("close following")
+            CORRECT_COURSE_RANGE = CLOSE_CORRECT_COURSE
+	else:
+	    print("far following")
+	    CORRECT_COURSE_RANGE = FAR_CORRECT_COURSE
+
         farLeftCorrection = False
         for(x,y) in farLeftReadings:
             if(x <= CORRECT_COURSE_RANGE):

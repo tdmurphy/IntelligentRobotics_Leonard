@@ -25,7 +25,7 @@ class PFLocaliser(PFLocaliserBase):
         self.ODOM_DRIFT_NOISE=1
  
         # ----- Sensor model parameters
-        self.NUMBER_PREDICTED_READINGS = 100     # Number of readings to predict
+        self.NUMBER_PREDICTED_READINGS = 200     # Number of readings to predict
         self.plotted=False
 	self.errorList=np.asarray([])
 	self.count=0
@@ -49,10 +49,10 @@ class PFLocaliser(PFLocaliserBase):
         for num in range (0,self.NUMBER_PREDICTED_READINGS):
             p= Pose()	#initialising pose
 
-            xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.1)	#noise calculations
-            yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.1)
+            xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.8)	#noise calculations
+            yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.8)
             zNoise=0
-            random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.1)
+            random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.8)
 
             p.position.x=initialpose.pose.pose.position.x + xNoise		#pose positions+noise
             p.position.y=initialpose.pose.pose.position.y + yNoise
@@ -117,7 +117,7 @@ class PFLocaliser(PFLocaliserBase):
 		#print("random choice",random_choice)
 		p=Pose()
 		sampled_particle=self.choose(choice)  #get the resampled particle
-		if (random_choice<0.95):						
+		if (random_choice<0.9):						
             		p.position.x=sampled_particle.position.x 		
             		p.position.y=sampled_particle.position.y 
             		p.position.z=sampled_particle.position.z   					
@@ -125,10 +125,10 @@ class PFLocaliser(PFLocaliserBase):
 			#print("0.95")
 			#print("0.95 ",p.position.x)
 		else:
-			xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.5)	#with a small probability generate a sample further away to deal with the kidnapped robot problem
-            		yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.5)
+			xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,2)	#with a small probability generate a sample further away to deal with the kidnapped robot problem
+            		yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,2)
             		zNoise=0
-            		random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.3)
+            		random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.5)
 
             		p.position.x=sampled_particle.position.x + xNoise		#pose positions+noise
             		p.position.y=sampled_particle.position.y + yNoise
@@ -263,11 +263,11 @@ class PFLocaliser(PFLocaliserBase):
 
 	error=self.getError(p)
 	self.errorList=np.concatenate((self.errorList,np.asarray([error])),axis=0)
-	#if(len(self.errorList)==30):
-	#	self.plotError()
+	if(len(self.errorList)==30):
+		self.plotError()
 
-	if (self.plotted==False and self.count==5):    
-		self.plotArrows(eps_val,pos_clustering,q)
+	#if (self.plotted==False and self.count==5):    
+		#self.plotArrows(eps_val,pos_clustering,q)
 	self.count+=1
         return p
 
