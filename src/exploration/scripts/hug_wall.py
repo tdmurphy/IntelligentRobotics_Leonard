@@ -22,6 +22,7 @@ BEGUN_EXPLORATION = False
 START_POSITION = None
 STOP_MOVING = False
 START_POSITION_BOUNDARY = 0.5
+CONSIDER_STOPPING = False
 
 def findWall(data):
     print("Attempting to find wall")
@@ -121,6 +122,7 @@ def determineIfComplete(data):
     global BEGUN_EXPLORATION
     global STOP_MOVING
     global START_POSITION
+    global CONSIDER_STOPPING
     odomPose = data.pose.pose.position
     if(odomPose.x != 0 and odomPose.y != 0 and BEGUN_EXPLORATION == False):
         print("I have begun my exploration")
@@ -129,7 +131,11 @@ def determineIfComplete(data):
     elif(BEGUN_EXPLORATION ==  True):
         totalMovement = np.absolute((odomPose.x - START_POSITION.x) + (odomPose.y - START_POSITION.y))
 
-        if(totalMovement > START_POSITION_BOUNDARY*2):
+        if(totalMovement > START_POSITION_BOUNDARY*2 and CONSIDER_STOPPING == False):
+            print("I can now consider stopping")
+            CONSIDER_STOPPING = True
+
+        if(CONSIDER_STOPPING == True):
             xBoundary = np.absolute(odomPose.x - START_POSITION.x)
             yBoundary = np.absolute(odomPose.y - START_POSITION.y)
 
