@@ -194,6 +194,7 @@ class PFLocaliser(PFLocaliserBase):
 	print("ERROR GRAPH!")
 	py.scatter(np.asarray([i for i in range(1,len(self.errorList)+1)]),self.errorList)
 	py.show(block=False)
+	py.savefig("error_graph.png")
 	self.plotted=True
 
     def plotArrows(self,eps_val,pos_clustering,q):
@@ -218,6 +219,7 @@ class PFLocaliser(PFLocaliserBase):
 	#print(pos_clustering)
 	py.quiver(mean_point[0],mean_point[1],np.cos(getHeading(q)),np.sin(getHeading(q)),color='red')	#plot mean	
 	py.show(block=False)
+	py.savefig("pose_graph.png")
 	self.plotted=True	
 
     def estimate_pose(self):
@@ -266,8 +268,8 @@ class PFLocaliser(PFLocaliserBase):
 	if(len(self.errorList)==30):
 		self.plotError()
 
-	#if (self.plotted==False and self.count==5):    
-		#self.plotArrows(eps_val,pos_clustering,q)
+	if (self.plotted==False and self.count==5):    
+		self.plotArrows(eps_val,pos_clustering,q)
 	self.count+=1
         return p
 
