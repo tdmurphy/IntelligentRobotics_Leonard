@@ -19,7 +19,8 @@ detector.loadModel()
 video_detector.loadModel()
 
 #publisher 
-pub = rospy.publisher('detecting_object', Boolean, queue_size=100)
+pub_bool = rospy.publisher('detecting_object', Boolean, queue_size=100)
+pub_str = rospy.publisher('objects_detected', String, queue_size=100)
 
 def detectImage(input_path, output_path):
     #returns a dictionary containing names and percentage probabilities of detected objects
@@ -38,10 +39,17 @@ def objectsInFrame(frame_number, output_array, output_count):
     
     #if there are some items being detected, return true 
     detecting = (items > 0)
-    pub.publish(detecting)
+    pub_bool.publish(detecting)
+    typesOfObjectInFrame(output_count)
 
     return output_count
 
+def typesOfObjectInFrame(output_count):
+    items = ""
+    delim = "|"
+    for eachItem in output_count:
+        items = items + delim + eachItem["name"]
+    pub_str.publish(items)
 
 def detectVideo(output_path):
     execution_path = os.getcwd()
@@ -54,7 +62,8 @@ def detectVideo(output_path):
 
 def talker():
 	rospy.init_node('Detector', anonymous=True)
-	rospy.Subscriber('objects', Float32MultiArray, detectVideo)
+    detectVideo("./output/camera_video_detected")
+	#rospy.Subscriber('objects', Float32MultiArray, detectVideo)
 	rospy.spin()
 
 if __name__ == '__main__':
