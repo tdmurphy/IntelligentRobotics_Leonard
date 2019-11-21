@@ -7,7 +7,7 @@ from datetime import datetime
 
 detector = ObjectDetection()
 video_detector = VideoObjectDetection()
-camera = cv2.VideoCapture(0) #throws error on VScode but works
+camera = cv2.VideoCapture(2) #throws error on VScode but works
 
 model_path = "./models/yolo-tiny.h5"
 
