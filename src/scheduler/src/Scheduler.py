@@ -21,9 +21,16 @@ class scheduler():
         weight=self.getWeight(task)
         self.taskWeights[task]=weight
         self.reSchedule()
-    
+
+    def removeTask(self,task):
+	self.taskList.remove(task)
+	del self.taskWeights[task]
+	if self.currentTask==task:
+		self.currentTask=None
+
+
     def getWeight(self,task):
-        weight= self.getDistanceWeight(task) + self.getModifierWeight(task) + self.TargetLastSeen(task)
+        weight= self.getDistanceWeight(task) + self.getModifierWeight(task) #+ self.TargetLastSeen(task)
         return weight
                 
     def reSchedule(self):
@@ -70,4 +77,5 @@ class scheduler():
         return modifierWeight
 
     def TargetLastSeen(self,task):
-	return self.loc.lastSeen(task.recipient)
+	#return self.loc.lastSeen(task.recipient)
+        pass

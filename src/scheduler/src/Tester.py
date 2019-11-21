@@ -25,7 +25,9 @@ if __name__ == '__main__':
      try:
 	t1= 'message|yo :3|Esha|Benet|Felix|0'
 	t2='message|<3|Xinpeng|London|Esha|0' 
-	tasks=[t1,t2]
+	t3='message|hey :)|Alexis|London|Esha|0'
+	t4='message|:D|Alexis|Benet|Tom|0'
+	tasks=[t1,t2,t3,t4]
 	published=False
         tester(tasks,published)
      except rospy.ROSInterruptException:

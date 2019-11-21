@@ -65,7 +65,13 @@ class FacialRecogniser():
             # found person! Send message back!
 	    video_capture.release()
             cv2.destroyAllWindows()
-	    return True
+	    return True, self.target
+	for person in self.backgroundPeople:
+		if person in self.peoplePresent:
+		    # found background person! Send message back!
+	            video_capture.release()
+            	    cv2.destroyAllWindows()
+	    	    return True, person
         for (top, right, bottom, left), name in zip(face_locations, face_names):
                 top *= 4
                 right *= 4
@@ -76,7 +82,7 @@ class FacialRecogniser():
                 font = cv2.FONT_HERSHEY_DUPLEX
                 cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
         cv2.imshow('Video', frame)
-        return None
+        return None, ''
 
           
     def setCurrentTarget(self,person):
@@ -91,7 +97,7 @@ class FacialRecogniser():
         print("Looking for",self.target, "And I know",self.known_face_names)
         
     def setBackgroundTarget(self,person):
-        self.backgroundPeople.append(pereson)
+        self.backgroundPeople.append(person)
             
     def removeTarget(self,person):
         if self.target==person:
@@ -141,7 +147,7 @@ class FacialRecogniser():
                         unknownNames[name]=(face_encoding)
                         #print("Don't know them")
                     face_names.append(name)
-                Found=self.displayNames(face_locations, face_names,cv2, frame,video_capture) 
+                Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame,video_capture) 
             
             if(self.currentTargetUnknownOrNoTarget):
                 for name in list(unknownNames.keys()):
@@ -150,9 +156,11 @@ class FacialRecogniser():
                     print(len(unknownNames))
             process_this_frame = not process_this_frame
             
-            Found=self.displayNames(face_locations, face_names,cv2, frame,video_capture)  
+            Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame,video_capture)  
 	    if (Found!=None):
-		return self.target          
+		video_capture.release()
+        	cv2.destroyAllWindows()
+		return foundPerson          
             
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break   
