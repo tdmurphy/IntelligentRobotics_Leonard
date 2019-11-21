@@ -1,0 +1,8 @@
+prefix=/data/private/robot/catkin_ws/devel
+
+Name: route_navigation
+Description: Description of route_navigation
+Version: 0.0.0
+Cflags: 
+Libs: -L/data/private/robot/catkin_ws/devel/lib 
+Requires: 
