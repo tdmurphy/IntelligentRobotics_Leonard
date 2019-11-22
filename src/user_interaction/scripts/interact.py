@@ -6,6 +6,7 @@ from google.protobuf.json_format import MessageToDict
 import os
 from dotenv import load_dotenv
 import rospy
+from std_msgs.msg import String
 
 
 taskPublisher = rospy.Publisher('new_task',String,queue_size=100)
@@ -45,7 +46,7 @@ def sendToDialogflow(text):
 
 
 def sendTask(taskType, sender, recipient, msgToSend, deliveryLoc, urgency):
-	taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend "|" + deliveryLoc + "|" + urgency
+	taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend  + "|" + deliveryLoc + "|" + urgency
 	task = String()
 	task.data = taskString
 	taskPublisher.publish(task)
@@ -217,12 +218,13 @@ def beginConversation():
 	try:
 		speak(listener.recognize_google(audio))
 		result = sendToDialogflow(request)
-        if result.query_result.intent.display_name == "create-msg-task":
-            createMsgTask(result)
-        elif result.query_result.intent.display_name == "create-pkg-task":
-            createPkgTask(result)
-        else:
-            speak(result.query_result.fulfillment_text)
+		if result.query_result.intent.display_name == "create-msg-task":
+			createMsgTask(result)
+		elif result.query_result.intent.display_name == "create-pkg-task":
+			createPkgTask(result)
+		else:
+			speak(result.query_result.fulfillment_text)
+
 	except sr.UnknownValueError:
 		rospy.loginfo("Empty text - Could not recognise utterance")
 		speak("Sorry, I didn't get that")
