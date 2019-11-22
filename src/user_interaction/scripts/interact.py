@@ -49,7 +49,7 @@ def sendTask(taskType, sender, recipient, msgToSend, deliveryLoc, urgency):
 	isUrgent = None
 	if urgency == "urgent":
 		isUrgent = 1
-	else
+	else:
 		isUrgent = 0
 	taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend  + "|" + deliveryLoc + "|" + str(isUrgent)
 	task = String()

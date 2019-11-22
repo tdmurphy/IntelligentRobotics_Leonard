@@ -308,6 +308,12 @@ exploration_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/exploration
 //Value Computed by CMake
 exploration_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/exploration
 
+//Value Computed by CMake
+face_vision_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/face_vision
+
+//Value Computed by CMake
+face_vision_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/face_vision
+
 //The directory containing a CMake configuration file for gencpp.
 gencpp_DIR:PATH=/opt/ros/melodic/share/gencpp/cmake
 
@@ -379,7 +385,7 @@ gtest_hide_internal_symbols:BOOL=OFF
 gtest_main_LIB_DEPENDS:STATIC=general;-lpthread;general;gtest;
 
 //Path to a library.
-lib:FILEPATH=/opt/ros/melodic/lib/libtf2.so
+lib:FILEPATH=/opt/ros/melodic/lib/librostime.so
 
 //The directory containing a CMake configuration file for message_filters.
 message_filters_DIR:PATH=/opt/ros/melodic/share/message_filters/cmake
@@ -392,6 +398,12 @@ message_runtime_DIR:PATH=/opt/ros/melodic/share/message_runtime/cmake
 
 //The directory containing a CMake configuration file for nav_msgs.
 nav_msgs_DIR:PATH=/opt/ros/melodic/share/nav_msgs/cmake
+
+//Value Computed by CMake
+package_vision_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/package_vision
+
+//Value Computed by CMake
+package_vision_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/package_vision
 
 //Value Computed by CMake
 pf_localisation_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/pf_localisation
@@ -423,8 +435,26 @@ rospy_DIR:PATH=/opt/ros/melodic/share/rospy/cmake
 //The directory containing a CMake configuration file for rostime.
 rostime_DIR:PATH=/opt/ros/melodic/share/rostime/cmake
 
+//Value Computed by CMake
+route_navigation_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/route_navigation
+
+//Value Computed by CMake
+route_navigation_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/route_navigation
+
+//Value Computed by CMake
+scheduler_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/scheduler
+
+//Value Computed by CMake
+scheduler_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/scheduler
+
 //The directory containing a CMake configuration file for sensor_msgs.
 sensor_msgs_DIR:PATH=/opt/ros/melodic/share/sensor_msgs/cmake
+
+//Value Computed by CMake
+sp_to_txt_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/sp_to_txt
+
+//Value Computed by CMake
+sp_to_txt_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/sp_to_txt
 
 //The directory containing a CMake configuration file for std_msgs.
 std_msgs_DIR:PATH=/opt/ros/melodic/share/std_msgs/cmake
@@ -443,6 +473,12 @@ tf2_ros_DIR:PATH=/opt/ros/melodic/share/tf2_ros/cmake
 
 //The directory containing a CMake configuration file for tf.
 tf_DIR:PATH=/opt/ros/melodic/share/tf/cmake
+
+//Value Computed by CMake
+user_interaction_BINARY_DIR:STATIC=/data/private/robot/catkin_ws/build/user_interaction
+
+//Value Computed by CMake
+user_interaction_SOURCE_DIR:STATIC=/data/private/robot/catkin_ws/src/user_interaction
 
 //The directory containing a CMake configuration file for xmlrpcpp.
 xmlrpcpp_DIR:PATH=/opt/ros/melodic/share/xmlrpcpp/cmake
@@ -557,7 +593,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=7
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=13
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
