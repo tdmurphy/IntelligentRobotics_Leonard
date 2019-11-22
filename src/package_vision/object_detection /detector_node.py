@@ -54,7 +54,7 @@ def detectVideo(output_path):
 
     video_path = video_detector.detectObjectsFromVideo(camera_input=camera,
                                 output_file_path=os.path.join(execution_path, output_path)
-                                , frames_per_second=5, log_progress=True, minimum_percentage_probability=30, per_frame_function=objectsInFrame, save_detected_video=False)
+                                , frames_per_second=5, log_progress=True, minimum_percentage_probability=75, per_frame_function=objectsInFrame, save_detected_video=False)
     print(video_path)
 
 def talker():
