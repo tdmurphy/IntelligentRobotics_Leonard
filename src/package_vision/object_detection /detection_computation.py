@@ -1,10 +1,14 @@
 import rospy
+from std_msgs.msg import Bool, String
+from datetime import datetime 
+
 
 num_objects = 0 
 
-change_publisher = rospy.publisher('change_detected', Boolean, queue_size=100)
+change_publisher = rospy.publisher('change_detected', Bool, queue_size=100)
 
 def detectChange(objects):
+    global num_objects 
     #seperate the string into objects using deliminator "|"
     seperated = objects.split("|")
     if not(len(seperated) == num_objects):
@@ -26,4 +30,3 @@ if __name__ == '__main__':
 	except rospy.ROSInterrupException:
 		pass 
 
-#heyy
