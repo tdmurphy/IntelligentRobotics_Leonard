@@ -1,6 +1,6 @@
 class Task():
     taskID=0
-    def __init__(self,sender='',recipient='',taskType='',payLoad='',location='',modifier='',current=False,original=''):
+    def __init__(self,taskType='',sender='',recipient='',payLoad='',location='',modifier='',current=False,original=''):
         self.taskID=Task.taskID
         Task.taskID +=1     
         self.sender=sender

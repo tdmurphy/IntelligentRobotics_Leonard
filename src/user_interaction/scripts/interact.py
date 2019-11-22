@@ -46,7 +46,12 @@ def sendToDialogflow(text):
 
 
 def sendTask(taskType, sender, recipient, msgToSend, deliveryLoc, urgency):
-	taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend  + "|" + deliveryLoc + "|" + urgency
+	isUrgent = None
+	if urgency == "urgent":
+		isUrgent = 1
+	else
+		isUrgent = 0
+	taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend  + "|" + deliveryLoc + "|" + str(isUrgent)
 	task = String()
 	task.data = taskString
 	taskPublisher.publish(task)
