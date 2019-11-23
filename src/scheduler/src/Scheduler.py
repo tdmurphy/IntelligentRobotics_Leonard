@@ -27,7 +27,11 @@ class scheduler():
 	del self.taskWeights[task]
 	if self.currentTask==task:
 		self.currentTask=None
+	self.reSchedule()
 
+    def adjustWeight(self,task,weight):
+	self.taskWeights[task]=self.taskWeights[task]+weight
+	self.reSchedule()
 
     def getWeight(self,task):
         weight= self.getDistanceWeight(task) + self.getModifierWeight(task) #+ self.TargetLastSeen(task)
@@ -39,9 +43,13 @@ class scheduler():
         self.currentTask= max(self.taskWeights, key=self.taskWeights.get)        
         
     def getTask(self):
+	if (len(self.taskList)==0):
+            return
         return self.currentTask.taskID, self.taskWeights[self.currentTask]
 
     def getTarget(self):
+	if (len(self.taskList)==0):
+            return
 	return self.currentTask.recipient
     
     def getCurrentPosition(self): #replace with a subscription to odom

@@ -15,6 +15,7 @@ class FacialRecogniser():
         self.peoplePresent=[]
         self.backgroundPeople=[]
         self.init_people()
+	self.video_capture=None
         #self.resetFile("knownFaces.txt")
         #self.new_Screen()
         
@@ -59,18 +60,18 @@ class FacialRecogniser():
                 self.known_face_names.append(face_identity) 
         f.close()
         
-    def displayNames(self,face_locations, face_names,cv2,frame,video_capture):
+    def displayNames(self,face_locations, face_names,cv2,frame):
         self.peoplePresent=face_names
+	#print("Looking for",self.target, "Background searching",self.backgroundPeople)
         if ((self.target != None) and (self.target in self.peoplePresent)):
             # found person! Send message back!
-	    video_capture.release()
-            cv2.destroyAllWindows()
+	    self.close_Screen()
 	    return True, self.target
 	for person in self.backgroundPeople:
 		if person in self.peoplePresent:
 		    # found background person! Send message back!
-	            video_capture.release()
-            	    cv2.destroyAllWindows()
+		    print("Found",person," in fg")
+	            self.close_Screen()
 	    	    return True, person
         for (top, right, bottom, left), name in zip(face_locations, face_names):
                 top *= 4
@@ -87,17 +88,38 @@ class FacialRecogniser():
           
     def setCurrentTarget(self,person):
         if(self.target==None):
-            #print("Finding new person")
+            print("Finding new person")
             self.target=person
-        elif(self.target!=None):
-            self.backgroundPeople.append(self.target)
-            #print("Inserting into background finding")
+        elif((self.target!=None) and(self.target!=person)):
+	    if (self.target not in self.backgroundPeople):
+                self.backgroundPeople.append(self.target)
+                print("Inserting",self.target," into background finding")
             self.target=person    
         self.currentTargetUnknownOrNoTarget=False
+	if person in self.backgroundPeople:
+	    self.backgroundPeople.remove(person)
         print("Looking for",self.target, "And I know",self.known_face_names)
         
-    def setBackgroundTarget(self,person):
-        self.backgroundPeople.append(person)
+    def setBackgroundTarget(self,person_to_back,new_target):
+	if (person_to_back not in self.backgroundPeople):
+		self.backgroundPeople.append(person_to_back)
+	self.setCurrentTarget(new_target)	
+
+	"""if person_to_back==new_target: #if person to background is the new target, don't add
+	    self.target=new_target
+	if self.target!=person_to_back:
+	    if():
+	    self.backgroundPeople.append(self.target)
+
+	if ((person_to_back not in self.backgroundPeople) and(person_to_back!=new_target)):
+            self.backgroundPeople.append(person_to_back) #person to back isn't current
+	    print("Inserting",person_to_back,"into queue")
+	if self.target==person_to_back:
+	    if (self.target not in self.backgroundPeople and (person_to_back!=new_target)) :
+		self.backgroundPeople.append(self.target)
+		print("Inserting",self.target,"into queue")
+	    self.target=new_target"""
+
             
     def removeTarget(self,person):
         if self.target==person:
@@ -107,11 +129,16 @@ class FacialRecogniser():
             self.backgroundPeople.remove(person)
         else:
             return
-        
+
+    def close_Screen(self):
+        print("Closing screen",self.target)
+        self.video_capture.release()
+        cv2.destroyAllWindows()
         
     def new_Screen(self):
+	print("Opening Screen",self.target)
         self.init_people()
-        video_capture = cv2.VideoCapture(0)    
+        self.video_capture = cv2.VideoCapture(0)    
         unknownNames={}
 
         face_locations = []
@@ -120,7 +147,7 @@ class FacialRecogniser():
         process_this_frame = True
         
         while True:
-            ret, frame = video_capture.read()    
+            ret, frame = self.video_capture.read()    
             #print("1",frame)
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
             #print("2")
@@ -147,7 +174,7 @@ class FacialRecogniser():
                         unknownNames[name]=(face_encoding)
                         #print("Don't know them")
                     face_names.append(name)
-                Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame,video_capture) 
+                Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame) 
             
             if(self.currentTargetUnknownOrNoTarget):
                 for name in list(unknownNames.keys()):
@@ -156,15 +183,13 @@ class FacialRecogniser():
                     print(len(unknownNames))
             process_this_frame = not process_this_frame
             
-            Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame,video_capture)  
+            Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame)  
 	    if (Found!=None):
-		video_capture.release()
-        	cv2.destroyAllWindows()
+		self.close_Screen()
 		return foundPerson          
             
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break   
 
-        video_capture.release()
-        cv2.destroyAllWindows()
+        self.close_Screen()
         return 
