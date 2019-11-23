@@ -1,0 +1,8 @@
+prefix=/data/private/robot/catkin_ws/devel
+
+Name: scheduler
+Description: Description of scheduler
+Version: 0.0.0
+Cflags: 
+Libs: -L/data/private/robot/catkin_ws/devel/lib 
+Requires: 

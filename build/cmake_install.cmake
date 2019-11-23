@@ -133,7 +133,13 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/data/private/robot/catkin_ws/build/gtest/cmake_install.cmake")
   include("/data/private/robot/catkin_ws/build/assignment1/cmake_install.cmake")
   include("/data/private/robot/catkin_ws/build/exploration/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/face_vision/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/package_vision/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/route_navigation/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/scheduler/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/sp_to_txt/cmake_install.cmake")
   include("/data/private/robot/catkin_ws/build/pf_localisation/cmake_install.cmake")
+  include("/data/private/robot/catkin_ws/build/user_interaction/cmake_install.cmake")
 
 endif()
 

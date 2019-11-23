@@ -17,8 +17,8 @@ scheduler= scheduler()
 def createTask(data):
     parts=data.data.split("|")
     #print(parts)
-    #taskType, payload, recipient, location, sender, urgent
-    task=Task(parts[4],parts[2],parts[0],parts[1],parts[3],int(parts[5]),False,data.data)
+    #taskType, sender, recipient, payLoad, location, modifier
+    task=Task(parts[0],parts[1],parts[2],parts[3],parts[5],int(parts[5]),False,data.data)
     task.printTask()
     return task
 
@@ -63,7 +63,7 @@ def activateLeonard(data):
 def listener():
     print("Listening")
     rospy.init_node('scheduler', anonymous=True)
-    rospy.Subscriber("task", String, schedule)
+    rospy.Subscriber("new_task", String, schedule)
     rospy.Subscriber("found_person", String, activateLeonard)
 
     rospy.spin()
