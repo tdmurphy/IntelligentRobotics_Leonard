@@ -15,7 +15,7 @@ class FacialRecogniser():
         self.peoplePresent=[]
         self.backgroundPeople=[]
         self.init_people()
-	self.video_capture=None
+	    self.video_capture=None
         #self.resetFile("knownFaces.txt")
         #self.new_Screen()
         
