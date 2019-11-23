@@ -22,7 +22,7 @@ def initialise():
 	rospy.loginfo("Environment variables loaded from .env")
 
 	try:
-		credentials = service_account.Credentials.from_service_account_file(os.getenv("GCP_SERVICE_ACC_CRED"))
+		credentials = service_account.Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 		client = dialogflow.SessionsClient(transport=os.getenv("https_proxy"))
 		session = client.session_path(os.getenv("DIALOGFLOW_PROJECT_ID"), "unique")
 		rospy.loginfo("GCP credentials verified and session created with DialogFlow API")
@@ -86,7 +86,7 @@ def createMsgTask(response):
 
             if (msgToSend is None or sender is None) or (recipient is None or urgency is None):
                 speak(response.query_result.fulfillment_text)
-                listener.adjust_for_ambient_noise(source, duration=1)
+                listener.adjust_for_ambient_noise(source, duration=0.3)
                 print("I'm listening")
                 audio = listener.listen(source)
                 print("got it")
@@ -105,7 +105,7 @@ def createMsgTask(response):
         speak(response.query_result.fulfillment_text)
         speak("Is this correct?")
 
-        listener.adjust_for_ambient_noise(source, duration=1)
+        listener.adjust_for_ambient_noise(source, duration=0.3)
         print("I'm listening")
         audio = listener.listen(source)
         print("got it")
@@ -153,7 +153,7 @@ def createPkgTask(response):
 
             if (deliveryLoc is None or sender is None) or (recipient is None or urgency is None):
                 speak(response.query_result.fulfillment_text)
-                listener.adjust_for_ambient_noise(source, duration=1)
+                listener.adjust_for_ambient_noise(source, duration=0.3)
                 print("I'm listening")
                 audio = listener.listen(source)
                 print("got it")
@@ -172,7 +172,7 @@ def createPkgTask(response):
         speak(response.query_result.fulfillment_text)
         speak("Is this correct?")
 
-        listener.adjust_for_ambient_noise(source, duration=1)
+        listener.adjust_for_ambient_noise(source, duration=0.3)
         print("I'm listening")
         audio = listener.listen(source)
         print("got it")
@@ -221,7 +221,7 @@ def beginConversation():
 		rospy.loginfo("Captured audio. Processing...")
 
 	try:
-		speak(listener.recognize_google(audio))
+		request = listener.recognize_google(audio)
 		result = sendToDialogflow(request)
 		if result.query_result.intent.display_name == "create-msg-task":
 			createMsgTask(result)
