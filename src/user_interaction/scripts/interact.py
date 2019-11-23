@@ -23,7 +23,7 @@ def initialise():
 
 	try:
 		credentials = service_account.Credentials.from_service_account_file(os.getenv("GCP_SERVICE_ACC_CRED"))
-		client = dialogflow.SessionsClient(credentials = credentials)
+		client = dialogflow.SessionsClient(transport=os.getenv("https_proxy"))
 		session = client.session_path(os.getenv("DIALOGFLOW_PROJECT_ID"), "unique")
 		rospy.loginfo("GCP credentials verified and session created with DialogFlow API")
 	except IOError as e:
