@@ -33,6 +33,7 @@ def detectImage(input_path, output_path):
 
     return detection
 
+
 def objectsInFrame(frame_number, output_array, output_count):
     items = len(output_count)
     string = ""
