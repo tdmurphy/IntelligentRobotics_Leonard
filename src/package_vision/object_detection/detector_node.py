@@ -40,7 +40,7 @@ def objectsInFrame(frame_number, output_array, output_count):
     print("objects in frame %i" % items)
     for eachItem in output_count:
         print(eachItem)
-	string = string + "|" + str(eachItem) 
+	string = string + str(eachItem) + "|" 
     
     #if there are some items being detected, return true 
     detecting = (items > 0)

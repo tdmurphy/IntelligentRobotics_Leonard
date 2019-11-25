@@ -9,11 +9,17 @@ import rospy
 from std_msgs.msg import String
 
 
+#Publishes new task
 taskPublisher = rospy.Publisher('new_task',String,queue_size=100)
+
+#Globals for text to speech and speech recognition
 engine = tts.init()
 listener = sr.Recognizer()
 client = None
 session = None
+
+#Globals for object detection
+changeInObjects = False
 
 
 def initialise():
@@ -243,8 +249,14 @@ def speak(utterance):
 	engine.runAndWait()
 
 
+def objectsDetected(data):
+	objects = data.data.split("|")
+	print(objects)
+
+
 def setUpNode():
 	rospy.init_node('Interaction', anonymous=True)
+	rospy.Subscriber('objects_detected',String, objectsDetected)
 	initialise()
 
 	while True:
