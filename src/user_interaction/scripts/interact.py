@@ -18,9 +18,8 @@ listener = sr.Recognizer()
 client = None
 session = None
 
-#Globals for object detection
-changeInObjects = False
-
+#Global for object detection
+numObjects = 0
 
 def initialise():
 	global engine, client, session
@@ -105,7 +104,6 @@ def createMsgTask(response):
                 except sr.RequestError as e:
                     print("Could not request results from Google Speech Recognition service; {0}".format(e))
             else:
-                print("Im done")
                 taskCreated = True
 
         speak(response.query_result.fulfillment_text)
@@ -186,7 +184,18 @@ def createPkgTask(response):
             confirmation = listener.recognize_google(audio)
             print(confirmation)
             if "yes" in confirmation.lower():
-                speak("Great! I'll get round to it. Thank you")
+            	objectsBeforePlacement = numObjects
+            	obNotAdded = True
+                speak("Great! Please give me the item you want to deliver")
+                while(obNotAdded):
+                	if(objectsBeforePlacement == numObjects):
+                		print("Object not added")
+                	else:
+                		print("object added")
+                		obNotAdded = False
+                speak("Thank you, I will get round to it!")
+
+
                 sendTask("package", sender, recipient, "", deliveryLoc, urgency)
             else:
                 speak("I must have misunderstood something, lets start again.")
@@ -194,7 +203,7 @@ def createPkgTask(response):
         except sr.UnknownValueError:
             speak("Sorry, I didn't get that")
         except sr.RequestError as e:
-            print("Could not request results from Google Speech Recognition service; {0}".format(e))
+            rospy.loginfo("Could not request results from Google Speech Recognition service; {0}".format(e))
 
 
 def listenForCommand():
@@ -250,8 +259,11 @@ def speak(utterance):
 
 
 def objectsDetected(data):
+	global numObjects
 	objects = data.data.split("|")
-	print(objects)
+	print(objects.size)
+	numObjects = objects.size
+
 
 
 def setUpNode():
