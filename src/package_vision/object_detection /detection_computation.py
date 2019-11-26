@@ -17,7 +17,12 @@ def detectChange(objects):
         change_publisher.publish(False)
     num_objects = len(seperated)
 
- 
+
+
+def probabalistic_calculations(objects):
+    #a function to give higher weighting to objects that are likely to be in the frame 
+    seperated = objects.plit("|")
+    
 
 def talker():
 	rospy.init_node('DetectorComputer', anonymous=True)

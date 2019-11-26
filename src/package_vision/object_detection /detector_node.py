@@ -37,9 +37,9 @@ def objectsInFrame(frame_number, output_array, output_count):
     items = len(output_count)
     string = ""
     print("objects in frame %i" % items)
-    for eachItem in output_count:
-        print(eachItem)
-	string = string + "|" + str(eachItem) 
+    for eachItem in output_array:
+        print(eachItem["name"] + " " + eachItem["percentage_probability"])
+        string = string + "|" + str(eachItem["name"])  
     
     #if there are some items being detected, return true 
     detecting = (items > 0)
@@ -54,7 +54,8 @@ def detectVideo(output_path):
 
     video_path = video_detector.detectObjectsFromVideo(camera_input=camera,
                                 output_file_path=os.path.join(execution_path, output_path)
-                                , frames_per_second=5, log_progress=True, minimum_percentage_probability=90, per_frame_function=objectsInFrame, save_detected_video=False)
+                                , frames_per_second=5, log_progress=True, minimum_percentage_probability=90, 
+                                per_frame_function=objectsInFrame, save_detected_video=False)
     print(video_path)
 
 def talker():
