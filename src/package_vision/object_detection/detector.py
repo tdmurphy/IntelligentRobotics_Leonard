@@ -2,26 +2,31 @@ from imageai.Detection import ObjectDetection, VideoObjectDetection
 import os
 import cv2
 
-detector = ObjectDetection()
-video_detector = VideoObjectDetection()
-video_detector_resnet = VideoObjectDetection()
 camera = cv2.VideoCapture(0)
-_, frame = camera.read()
-cv2.imshow('Video', frame)
+if(not camera.isOpened()):
+    print("camera not opened")
+else:
+    print("camera opened")
+    #_, frame = camera.read()
+    #cv2.imshow('Video', frame)
 
-model_path = "./models/yolo-tiny.h5"
+detector = ObjectDetection()
+#video_detector = VideoObjectDetection()
+video_detector_resnet = VideoObjectDetection()
+
+#model_path = "./models/yolo-tiny.h5"
 model_path_resnet = "./models/resnet50_coco_best_v2.0.1.h5"
 
-detector.setModelTypeAsTinyYOLOv3()
-video_detector.setModelTypeAsTinyYOLOv3()
+#detector.setModelTypeAsTinyYOLOv3()
+#video_detector.setModelTypeAsTinyYOLOv3()
 video_detector_resnet.setModelTypeAsRetinaNet()
 
-detector.setModelPath(model_path)
-video_detector.setModelPath(model_path)
+#detector.setModelPath(model_path)
+#video_detector.setModelPath(model_path)
 video_detector_resnet.setModelPath(model_path_resnet)
 
-detector.loadModel()
-video_detector.loadModel()
+#detector.loadModel()
+#video_detector.loadModel()
 video_detector_resnet.loadModel()
 
 custom = video_detector_resnet.CustomObjects(person=True, handbag=True, tie=True, suitcase=True, bottle=True, wine_glass=True, 
@@ -29,6 +34,7 @@ cup=True, fork=True, knife=True, spoon=True, bowl=True, banana=True, apple=True,
 donut=True, cake=True, chair=True, potted_plant=True, laptop=True, mouse=True, remote=True, keyboard=True, cell_phone=True, book=True,  
 clock=True, scissors=True)
 
+"""
 def detectImage(input_path, output_path):
     #returns a dictionary containing names and percentage probabilities of detected objects
     detection = detector.detectObjectsFromImage(input_image=input_path, output_image_path=output_path)
@@ -37,7 +43,7 @@ def detectImage(input_path, output_path):
         print(eachItem["name"], " : ", eachItem["percentage_probability"])
 
     return detection
-
+"""
 def objectsInFrame(frame_number, output_array, output_count):
     items = len(output_count)
     print("objects in frame %i" % items)
@@ -49,6 +55,7 @@ def objectsInFrame(frame_number, output_array, output_count):
     return string 
 
 def detectVideo(detector):
+    
     execution_path = os.getcwd()
 
     detector.detectCustomObjectsFromVideo(output_file_path=os.path.join(execution_path, "./output/camera_video_detected"), 
