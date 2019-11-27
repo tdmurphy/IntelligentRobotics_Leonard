@@ -10,10 +10,10 @@ from std_msgs.msg import String
 
 
 #Publishes new task
-taskPublisher = rospy.Publisher('new_task',String,queue_size=100)
+taskPublisher = rospy.Publisher('new_task', String, queue_size=100)
+speakPublisher = rospy.Publisher('speak_msg', String, queue_size=100)
 
-#Globals for text to speech and speech recognition
-engine = tts.init()
+#Globals for speech recognition
 listener = sr.Recognizer()
 client = None
 session = None
@@ -21,48 +21,60 @@ session = None
 #Global for object detection
 numObjects = 0
 
+#Global for tts - will continue conversation when it knows its done speaking
+canContinue = False
+
 def initialise():
-	global engine, client, session
-	load_dotenv()
-	rospy.loginfo("Environment variables loaded from .env")
+    global client, session
+    load_dotenv()
+    rospy.loginfo("Environment variables loaded from .env")
 
-	try:
-		credentials = service_account.Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
-		client = dialogflow.SessionsClient(transport=os.getenv("https_proxy"))
-		session = client.session_path(os.getenv("DIALOGFLOW_PROJECT_ID"), "unique")
-		rospy.loginfo("GCP credentials verified and session created with DialogFlow API")
-	except IOError as e:
-		rospy.loginfo("ERROR - could not establish connection to DialogFlow API - {0}".format(e))
-
-	engine.setProperty('rate', 140) #Set rate of speech
-	engine.setProperty('volume',1.0)
-	rospy.loginfo("Text-to-Speech successfully configured")
+    try:
+        credentials = service_account.Credentials.from_service_account_file(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+        client = dialogflow.SessionsClient(transport=os.getenv("https_proxy"))
+        session = client.session_path(os.getenv("DIALOGFLOW_PROJECT_ID"), "unique")
+        rospy.loginfo("GCP credentials verified and session created with DialogFlow API")
+    except IOError as e:
+        rospy.loginfo("ERROR - could not establish connection to DialogFlow API - {0}".format(e))
 
 
 def sendToDialogflow(text):
 
-	if text:
-		textInput = dialogflow.types.TextInput(text = text, language_code = "en")
-		queryInput = dialogflow.types.QueryInput(text = textInput)
+    if text:
+        textInput = dialogflow.types.TextInput(text=text, language_code="en")
+        queryInput = dialogflow.types.QueryInput(text=textInput)
 
-		response = client.detect_intent(session = session, query_input = queryInput)
+        response = client.detect_intent(session=session, query_input=queryInput)
 
-		return response
+        return response
 
 
 def sendTask(taskType, sender, recipient, msgToSend, deliveryLoc, urgency):
-	isUrgent = None
-	if urgency == "urgent":
-		isUrgent = 1
-	else:
-		isUrgent = 0
-	taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend  + "|" + deliveryLoc + "|" + str(isUrgent)
-	task = String()
-	task.data = taskString
-	taskPublisher.publish(task)
+    isUrgent = None
+    if urgency == "urgent":
+        isUrgent = 1
+    else:
+        isUrgent = 0
+    taskString = taskType + "|" + sender + "|" + recipient + "|" + msgToSend  + "|" + deliveryLoc + "|" + str(isUrgent)
+    task = String()
+    task.data = taskString
+    taskPublisher.publish(task)
+
+
+def waitUntilDone(message):
+	global canContinue
+	canContinue = False
+	print(canContinue)
+	speakPublisher.publish(message)
+
+	while not canContinue:
+		print("waiting")
+	print("done")
 
 
 def createMsgTask(response):
+    global canContinue
+
     taskCreated = False
 
     with sr.Microphone() as source:
@@ -90,7 +102,8 @@ def createMsgTask(response):
                 urgency = parameters['urgency']
 
             if (msgToSend is None or sender is None) or (recipient is None or urgency is None):
-                speak(response.query_result.fulfillment_text)
+            	waitUntilDone(response.query_result.fulfillment_text)
+
                 listener.adjust_for_ambient_noise(source, duration=0.3)
                 print("I'm listening")
                 audio = listener.listen(source)
@@ -100,14 +113,15 @@ def createMsgTask(response):
                     print(request)
                     response = sendToDialogflow(request)
                 except sr.UnknownValueError:
-                    speak("Sorry, I didn't get that")
+                	waitUntilDone("Sorry, I didn't get that")
                 except sr.RequestError as e:
                     print("Could not request results from Google Speech Recognition service; {0}".format(e))
             else:
                 taskCreated = True
 
-        speak(response.query_result.fulfillment_text)
-        speak("Is this correct?")
+        waitUntilDone(response.query_result.fulfillment_text)
+
+        waitUntilDone("Is this correct?")
 
         listener.adjust_for_ambient_noise(source, duration=0.3)
         print("I'm listening")
@@ -117,13 +131,13 @@ def createMsgTask(response):
             confirmation = listener.recognize_google(audio)
             print(confirmation)
             if "yes" in confirmation.lower():
-                speak("Great! I'll get round to it. Thank you")
+                waitUntilDone("Great! I'll get round to it. Thank you")
                 sendTask("message",sender, recipient, msgToSend, "", urgency)
             else:
-                speak("I must have misunderstood something, lets start again.")
+                waitUntilDone("I must have misunderstood something, lets start again.")
                 listen()
         except sr.UnknownValueError:
-            speak("Sorry, I didn't get that")
+            waitUntilDone("Sorry, I didn't get that")
         except sr.RequestError as e:
             print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
@@ -156,7 +170,7 @@ def createPkgTask(response):
                 urgency = parameters['urgency']
 
             if (deliveryLoc is None or sender is None) or (recipient is None or urgency is None):
-                speak(response.query_result.fulfillment_text)
+                waitUntilDone(response.query_result.fulfillment_text)
                 listener.adjust_for_ambient_noise(source, duration=0.3)
                 print("I'm listening")
                 audio = listener.listen(source)
@@ -166,15 +180,15 @@ def createPkgTask(response):
                     print(request)
                     response = sendToDialogflow(request)
                 except sr.UnknownValueError:
-                    speak("Sorry, I didn't get that")
+                    waitUntilDone("Sorry, I didn't get that")
                 except sr.RequestError as e:
                     print("Could not request results from Google Speech Recognition service; {0}".format(e))
             else:
-                print("Im done")
                 taskCreated = True
 
-        speak(response.query_result.fulfillment_text)
-        speak("Is this correct?")
+        waitUntilDone(response.query_result.fulfillment_text)
+
+        waitUntilDone("Is this correct?")
 
         listener.adjust_for_ambient_noise(source, duration=0.3)
         print("I'm listening")
@@ -184,96 +198,98 @@ def createPkgTask(response):
             confirmation = listener.recognize_google(audio)
             print(confirmation)
             if "yes" in confirmation.lower():
-            	objectsBeforePlacement = numObjects
-            	obNotAdded = True
-                speak("Great! Please give me the item you want to deliver")
-                while(obNotAdded):
-                	if(objectsBeforePlacement == numObjects):
-                		print("Object not added")
-                	else:
-                		print("object added")
-                		obNotAdded = False
-                speak("Thank you, I will get round to it!")
-
+                objectsBeforePlacement = numObjects
+                obNotAdded = True
+                waitUntilDone("Great! Please give me the item you want to deliver")
+                while obNotAdded:
+                    if objectsBeforePlacement == numObjects:
+                        print("Object not added")
+                    else:
+                        print("object added")
+                        obNotAdded = False
+                waitUntilDone("Thank you, I will get round to it!")
 
                 sendTask("package", sender, recipient, "", deliveryLoc, urgency)
             else:
-                speak("I must have misunderstood something, lets start again.")
+                waitUntilDone("I must have misunderstood something, lets start again.")
                 listen()
         except sr.UnknownValueError:
-            speak("Sorry, I didn't get that")
+            waitUntilDone("Sorry, I didn't get that")
         except sr.RequestError as e:
             rospy.loginfo("Could not request results from Google Speech Recognition service; {0}".format(e))
 
 
 def listenForCommand():
 
-	with sr.Microphone() as source:
-		listener.adjust_for_ambient_noise(source, duration = 0.3)
-		rospy.loginfo("Node is listening")
-		audio = listener.listen(source)
-		rospy.loginfo("Captured audio. Processing...")
+    with sr.Microphone() as source:
+        listener.adjust_for_ambient_noise(source, duration=0.3)
+        rospy.loginfo("Node is listening")
+        audio = listener.listen(source)
+        rospy.loginfo("Captured audio. Processing...")
 
-	try:
-		text = listener.recognize_google(audio)
-		rospy.loginfo("Audio processed as : " + text)
-		if "leonard" in text.lower() or "hey leonard" in text.lower():
-			beginConversation()
-	except sr.UnknownValueError:
-		rospy.loginfo("Empty text - Could not recognise utterance")
-	except sr.RequestError as e:
-		rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
+    try:
+        text = listener.recognize_google(audio)
+        rospy.loginfo("Audio processed as : " + text)
+        if "leonard" in text.lower() or "hey leonard" in text.lower():
+            beginConversation()
+    except sr.UnknownValueError:
+        rospy.loginfo("Empty text - Could not recognise utterance")
+    except sr.RequestError as e:
+        rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
 
 
 def beginConversation():
-	response = sendToDialogflow("Hello")
+    response = sendToDialogflow("Hello")
 
-	with sr.Microphone() as source:
-		listener.adjust_for_ambient_noise(source, duration = 0.3)
-		speak(response.query_result.fulfillment_text)
-		print("I'm listening")
-		audio = listener.listen(source)
-		rospy.loginfo("Captured audio. Processing...")
+    with sr.Microphone() as source:
+        listener.adjust_for_ambient_noise(source, duration=0.3)
+        waitUntilDone(response.query_result.fulfillment_text)
+        while not canContinue:
+            print("waiting")
+        print("done")
+        print("I'm listening")
+        audio = listener.listen(source)
+        rospy.loginfo("Captured audio. Processing...")
 
-	try:
-		request = listener.recognize_google(audio)
-		result = sendToDialogflow(request)
-		if result.query_result.intent.display_name == "create-msg-task":
-			createMsgTask(result)
-		elif result.query_result.intent.display_name == "create-pkg-task":
-			createPkgTask(result)
-		else:
-			speak(result.query_result.fulfillment_text)
+    try:
+        request = listener.recognize_google(audio)
+        result = sendToDialogflow(request)
+        if result.query_result.intent.display_name == "create-msg-task":
+            createMsgTask(result)
+        elif result.query_result.intent.display_name == "create-pkg-task":
+            createPkgTask(result)
+        else:
+            waitUntilDone(result.query_result.fulfillment_text)
 
-	except sr.UnknownValueError:
-		rospy.loginfo("Empty text - Could not recognise utterance")
-		speak("Sorry, I didn't get that")
-	except sr.RequestError as e:
-		rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
-
-
-def speak(utterance):
-	rospy.loginfo("Text to be spoken: {0}".format(utterance))
-	engine.say(utterance)
-	engine.runAndWait()
+    except sr.UnknownValueError:
+        rospy.loginfo("Empty text - Could not recognise utterance")
+        waitUntilDone("Sorry, I didn't get that")
+    except sr.RequestError as e:
+        rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
 
 
 def objectsDetected(data):
-	global numObjects
-	objects = data.data.split("|")
-	print(objects.size)
-	numObjects = objects.size
+    global numObjects
+    objects = data.data.split("|")
+    print(objects.size)
+    numObjects = objects.size
 
+
+def doneSpeaking(data):
+    global canContinue
+    print("Got done")
+    if data.data == "done":
+        canContinue = True
 
 
 def setUpNode():
-	rospy.init_node('Interaction', anonymous=True)
-	rospy.Subscriber('objects_detected',String, objectsDetected)
-	initialise()
+    rospy.init_node('interaction', anonymous=True)
+    rospy.Subscriber('objects_detected',String, objectsDetected)
+    rospy.Subscriber('done_speaking', String, doneSpeaking)
+    initialise()
 
-	while True:
-		listenForCommand()
-
+    while True:
+        listenForCommand()
 
 
 if __name__ == '__main__':
