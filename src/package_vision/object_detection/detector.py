@@ -6,9 +6,11 @@ detector = ObjectDetection()
 video_detector = VideoObjectDetection()
 video_detector_resnet = VideoObjectDetection()
 camera = cv2.VideoCapture(0)
+_, frame = camera.read()
+cv2.imshow('Video', frame)
 
 model_path = "./models/yolo-tiny.h5"
-model_path_resnet = "./models/resnet50_coco_best_v2.0.1.h5"s
+model_path_resnet = "./models/resnet50_coco_best_v2.0.1.h5"
 
 detector.setModelTypeAsTinyYOLOv3()
 video_detector.setModelTypeAsTinyYOLOv3()
