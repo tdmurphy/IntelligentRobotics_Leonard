@@ -7,6 +7,7 @@ from PyQt5.QtGui import QPixmap
 import webcolors
 from PIL import Image
 import numpy as np
+import scipy as scp
 import random
 from sklearn.neighbors import KDTree
 #import sklearn.neighbors
@@ -25,6 +26,14 @@ import array as arr
 #  # return the indexes of K nearest neighbours
 #  return idx[:K]
 
+class Node:
+    prevNode = None
+    nextNodes = []
+    coords = None
+
+    def __init__(self, prevNode, coords):
+        self.prevNode = prevNode
+        self.coords = coords
 
 
 def draw_line_between_points(point1, point2):
@@ -160,7 +169,8 @@ def occupancy_grid(image_path):
    				#print("width,", width," ")
    				#print("height",height, " ")
 
-	print(Matrix)
+	return (Matrix)
+
 
 def generate_rand_node(init_point):
 
@@ -181,9 +191,13 @@ def generate_rand_node(init_point):
 
 #GUI
 class ranfdom(QDialog):
+        global Node
 
 	START_POINT = [0,0]
 	DEST_POINT = [0,0]
+        OCCUPANCY = occupancy_grid('clean_map_updated.png')
+        NODES = []
+        TREE = {}
 	
 
 	def __init__(self):
@@ -203,7 +217,7 @@ class ranfdom(QDialog):
 			point_set.append(points_to_add[i])
 			print("point_set", points_to_add[i])
 
-	def generate_point(self,point, point_size):
+	def generate_point(self, point, point_size):
 		
 		#define x and y for grid of points creation (round to nearest int)
 		x = point[0]#[0]
@@ -228,13 +242,36 @@ class ranfdom(QDialog):
 		for i in range(len(point_set)):
 			
 			if(point_set[i] != 0):
-				print("pointif :", i ,"  ", point_set[i])
+				#print("pointif :", i ,"  ", point_set[i])
 				picture.putpixel((point_set[i]), (color))
 		picture.save(output_image)
-	
+
+        def check_line(self, start, end, draw):
+            y_step = float(end[1] - start[1])/float(end[0] - start[0])
+            y_counter = float (0)
+
+            inc = 1
+            if start[0] > end[0]:
+                inc = -1
+
+            print("ystep: ", y_step, start, end)
+
+            for x in range(start[0], end[0], inc):
+                y_counter += y_step*inc
+                if(draw):
+                    self.draw_points([[x, int(start[1] + y_counter)]], 10, 'clean_map_updated.png', 'clean_map_updated.png')
+                print("checking: ", x, start[1] + int(y_counter))
+                if (self.OCCUPANCY[x][int(start[1] + y_counter)] == 1):
+                    return False
+
+            return True
+
 
 	def call_RRT(self , event):
 		init_node = []
+                if len(self.NODES)==0:
+                    self.NODES.append(self.start_clicked_point)
+                    self.TREE[tuple(self.start_clicked_point)] = Node(None, self.start_clicked_point)
 		print("START POINT clicked  ___",self.start_clicked_point)
 		self.RRT(self.start_clicked_point, 'clean_map_updated.png')#init_node)
 
@@ -249,19 +286,56 @@ class ranfdom(QDialog):
 			self.all_nodes.append(initial_point)
 
 
-
 		picture = Image.open(image_path)
 	
 		# Get the size of the image
 		width, height = picture.size
 
-		enviro_x = np.random.randint(width)
-		enviro_y = np.random.randint(height)
+                enivronment_rand_point = [0,0]
 
-		enviroment_rand_point = [enviro_x, enviro_y]
+                while (True):
+                    enviro_x = np.random.randint(width)
+                    enviro_y = np.random.randint(height)
 
-		print("enviroment_rand_point ",enviroment_rand_point)
+                    environment_rand_point = [enviro_x, enviro_y]
+                    if (self.OCCUPANCY[enviro_x][enviro_y] == 0):
+                        break
 
+		print("environment_rand_point ",environment_rand_point)
+                selected = False
+
+
+                print("nodes: ", self.NODES)
+                ktree = scp.spatial.KDTree(self.NODES)
+
+                nearest_nodes = ktree.query(environment_rand_point, 20)[1]
+                print ("nearest: ", nearest_nodes)
+                for n in nearest_nodes:
+                    if n >= len(ktree.data):
+                        break
+                    if self.check_line(ktree.data[n], environment_rand_point, False):
+                        print("selected: ", ktree.data[n])
+                        self.NODES.append(environment_rand_point)
+                        self.TREE[tuple(environment_rand_point)] = Node(self.TREE[tuple(ktree.data[n])], environment_rand_point)
+                        (self.TREE[tuple(environment_rand_point)]).nextNodes.append(self.TREE[tuple(environment_rand_point)])
+                        self.check_line(ktree.data[n], environment_rand_point, True)
+		        #self.draw_points(draw_line_between_points(environment_rand_point, ktree.data[n]), 10, 'clean_map_updated.png', 'clean_map_updated.png')
+                        break
+
+                #check if goal is acheivable:
+                print("nearest to end: ", nearest_nodes)
+                nearest_nodes = ktree.query(self.dest_clicked_point, 20)[1]
+                for n in nearest_nodes:
+                    if n >= len(ktree.data):
+                        break
+                    if self.check_line(ktree.data[n], self.dest_clicked_point, False):
+                        print ("Got goal")
+                        self.TREE[tuple(self.dest_clicked_point)]= Node(self.TREE[tuple(ktree.data[n])], self.dest_clicked_point)
+                        (self.TREE[tuple(self.dest_clicked_point)]).nextNodes.append(self.TREE[tuple(self.dest_clicked_point)])
+                        self.check_line(ktree.data[n], self.dest_clicked_point, True)
+                        break
+
+                print(self.NODES)
 
 		#neig_idx = knn_search(enviroment_rand_point,self.all_nodes,1)
 
@@ -307,7 +381,7 @@ class ranfdom(QDialog):
 		
 		# #rand_point = generate_rand_node(initial_point)
 		
-		rand_point_visible = self.generate_point(enviroment_rand_point, point_size)
+		rand_point_visible = self.generate_point(environment_rand_point, point_size)
 		# print(len(rand_point_visible))
 		self.draw_points(rand_point_visible, node_color, 'clean_map_updated.png', 'clean_map_updated.png')
 
@@ -432,4 +506,5 @@ sys.exit(app.exec_())
 #picture.putpixel((x,y), (new_color))
 #
 #find all points between point 1 x and point 2 x with set size of 1
-#color all points 
+#color all points
+
