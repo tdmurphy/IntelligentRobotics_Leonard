@@ -2,7 +2,8 @@ from imageai.Detection import ObjectDetection, VideoObjectDetection
 import os
 import cv2
 
-
+execution_path = os.getcwd()
+camera = cv2.VideoCapture(2)
 """if(not camera.isOpened()):
     print("camera not opened")
 else:
@@ -11,7 +12,7 @@ else:
     #cv2.imshow('Video', frame)
 """
 
-detector = ObjectDetection()
+#detector = ObjectDetection()
 #video_detector = VideoObjectDetection()
 video_detector_resnet = VideoObjectDetection()
 
@@ -56,7 +57,7 @@ def objectsInFrame(frame_number, output_array, output_count):
     return string 
 
 def detectVideo(detector):
-    camera = cv2.VideoCapture(0)
+    
     execution_path = os.getcwd()
 
     detector.detectCustomObjectsFromVideo(output_file_path=os.path.join(execution_path, "./output/camera_video_detected"), 
