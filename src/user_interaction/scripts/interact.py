@@ -12,6 +12,7 @@ from std_msgs.msg import String
 #Publishes new task
 taskPublisher = rospy.Publisher('new_task', String, queue_size=100)
 speakPublisher = rospy.Publisher('speak_msg', String, queue_size=100)
+listenPublisher = rospy.Publisher('start_listening', String, queue_size=100)
 
 #Globals for speech recognition
 listener = sr.Recognizer()
@@ -23,6 +24,9 @@ numObjects = 0
 
 #Global for tts - will continue conversation when it knows its done speaking
 canContinue = False
+
+#Global for speech recognition - stores the received speech transcription
+processedSpeech = ""
 
 def initialise():
     global client, session
@@ -63,15 +67,28 @@ def sendTask(taskType, sender, recipient, msgToSend, deliveryLoc, urgency):
 
 def waitUntilDone(message):
 	global canContinue
+	done = False
 	canContinue = False
-	print(canContinue)
 	speakPublisher.publish(message)
 
-	while not canContinue:
-		print("waiting")
+	while not done:
+		if canContinue:
+			done = True
 	print("done")
 
 
+def waitForMessage():
+	global processedSpeech
+
+	listenPublisher.publish("listen")
+	gotMessage = False
+	while not gotMessage:
+		if not processedSpeech == "":
+			gotMessage = True
+	print("Got message")
+	return processedSpeech
+
+	
 def createMsgTask(response):
     global canContinue
 
@@ -220,22 +237,13 @@ def createPkgTask(response):
 
 
 def listenForCommand():
+	global processedSpeech
 
-    with sr.Microphone() as source:
-        listener.adjust_for_ambient_noise(source, duration=0.3)
-        rospy.loginfo("Node is listening")
-        audio = listener.listen(source)
-        rospy.loginfo("Captured audio. Processing...")
+	text = waitForMessage()
+	processedSpeech = ""
 
-    try:
-        text = listener.recognize_google(audio)
-        rospy.loginfo("Audio processed as : " + text)
-        if "leonard" in text.lower() or "hey leonard" in text.lower():
-            beginConversation()
-    except sr.UnknownValueError:
-        rospy.loginfo("Empty text - Could not recognise utterance")
-    except sr.RequestError as e:
-        rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
+	if "leonard" in text.lower() or "hey leonard" in text.lower():
+		beginConversation()
 
 
 def beginConversation():
@@ -244,9 +252,6 @@ def beginConversation():
     with sr.Microphone() as source:
         listener.adjust_for_ambient_noise(source, duration=0.3)
         waitUntilDone(response.query_result.fulfillment_text)
-        while not canContinue:
-            print("waiting")
-        print("done")
         print("I'm listening")
         audio = listener.listen(source)
         rospy.loginfo("Captured audio. Processing...")
@@ -277,15 +282,21 @@ def objectsDetected(data):
 
 def doneSpeaking(data):
     global canContinue
-    print("Got done")
     if data.data == "done":
         canContinue = True
+
+
+def processedRequest(data):
+	global processedSpeech
+	rospy.loginfo("Received request: {0}".format(data.data))
+	processedSpeech = data.data
 
 
 def setUpNode():
     rospy.init_node('interaction', anonymous=True)
     rospy.Subscriber('objects_detected',String, objectsDetected)
     rospy.Subscriber('done_speaking', String, doneSpeaking)
+    rospy.Subscriber('user_speech', String, processedRequest)
     initialise()
 
     while True:
