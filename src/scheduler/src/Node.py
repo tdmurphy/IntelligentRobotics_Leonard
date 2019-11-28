@@ -18,7 +18,7 @@ def createTask(data):
     parts=data.data.split("|")
     #print(parts)
     #taskType, sender, recipient, payLoad, location, modifier
-    task=Task(parts[0],parts[1],parts[2],parts[3],parts[5],int(parts[5]),False,data.data)
+    task=Task(parts[0],parts[1],parts[2],parts[3],parts[4],int(parts[5]),False,data.data)
     task.printTask()
     return task
 

@@ -20,7 +20,7 @@ class Locator():
     def getLocation(self,place):
         if place in self.locationList:
             return self.locationList[place]
-        return [0,0]
+        return [1,1]
 
     def TargetLastSeen(self,person):
 	#timeDiff=
