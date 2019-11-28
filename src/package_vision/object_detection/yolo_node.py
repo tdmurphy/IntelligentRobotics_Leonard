@@ -30,6 +30,7 @@ video_detector.setModelPath(model_path)
 video_detector.loadModel()
 
 pub_str = rospy.Publisher('objects_detected', String, queue_size=100)
+pub_num = rospy.Publisher("unique_objects", Int32, queue_size=100)
 
 custom = video_detector.CustomObjects(person=True, handbag=True, tie=True, suitcase=True, bottle=True, wine_glass=True, 
 cup=True, fork=True, knife=True, spoon=True, bowl=True, banana=True, apple=True, sandwich=True, orange=True, pizza=True, 
@@ -39,6 +40,7 @@ clock=True, scissors=True)
 def objectsInFrame(frame_number, output_array, output_count, returned_frame):
     print("output_array length %i" % len(output_array))
     items = len(output_count)
+    pub_num.publish(items)
     print("objects in frame %i" % items)
     string = ""
     objects_string = ""

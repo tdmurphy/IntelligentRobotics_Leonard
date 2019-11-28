@@ -6,7 +6,7 @@ from google.protobuf.json_format import MessageToDict
 import os
 from dotenv import load_dotenv
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Int32
 
 
 #Publishes new task
@@ -275,9 +275,8 @@ def beginConversation():
 
 def objectsDetected(data):
     global numObjects
-    objects = data.data.split("|")
-    print(objects.size)
-    numObjects = objects.size
+    print(data.data)
+    numObjects = data.data
 
 
 def doneSpeaking(data):
@@ -294,7 +293,7 @@ def processedRequest(data):
 
 def setUpNode():
     rospy.init_node('interaction', anonymous=True)
-    rospy.Subscriber('objects_detected',String, objectsDetected)
+    rospy.Subscriber('unique_objects',Int32, objectsDetected)
     rospy.Subscriber('done_speaking', String, doneSpeaking)
     rospy.Subscriber('user_speech', String, processedRequest)
     initialise()
