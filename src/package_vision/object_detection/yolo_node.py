@@ -6,7 +6,7 @@ import rospy
 from std_msgs.msg import Bool, String
 
 execution_path = os.getcwd()
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(2)
 
 def show_frame(camera):
 	if(not camera.isOpened()):
@@ -16,7 +16,8 @@ def show_frame(camera):
     		_, frame = camera.read()
     		cv2.waitKey(20)
     		cv2.imshow('Frame', frame)
-    		cv2.waitKey(200)
+    		cv2.waitKey(0)
+		cv2.imwrite('./output/camera_view.png', frame)
     		cv2.destroyAllWindows()
 
 video_detector = VideoObjectDetection()
@@ -59,8 +60,7 @@ def detectVideo(detector):
 def talker():
 	print("talker...")
         rospy.init_node('Detector', anonymous=True)
-	while(True):	
-        	detectVideo(video_detector)
+	detectVideo(video_detector)
 
 if __name__ == '__main__':
 	show_frame(camera)
