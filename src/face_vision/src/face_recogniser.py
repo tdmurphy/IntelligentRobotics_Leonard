@@ -111,7 +111,7 @@ class FacialRecogniser():
         
     def new_Screen(self):
         self.init_people()
-        video_capture = cv2.VideoCapture(0)    
+        video_capture = cv2.VideoCapture(4)    
         unknownNames={}
 
         face_locations = []

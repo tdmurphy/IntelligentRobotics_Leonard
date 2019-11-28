@@ -3,10 +3,10 @@ import os
 import cv2
 from matplotlib import pyplot as plt
 import rospy
-from std_msgs.msg import Bool, String
+from std_msgs.msg import Bool, String, Int32
 
 execution_path = os.getcwd()
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(2)
 
 def show_frame(camera):
 	if(not camera.isOpened()):
