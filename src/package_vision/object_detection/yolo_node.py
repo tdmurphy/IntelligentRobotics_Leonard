@@ -8,15 +8,16 @@ from std_msgs.msg import Bool, String
 execution_path = os.getcwd()
 camera = cv2.VideoCapture(0)
 
-if(not camera.isOpened()):
-    print("camera not opened")
-else:
-    print("camera opened")
-    _, frame = camera.read()
-    cv2.waitKey(20)
-    cv2.imshow('Frame', frame)
-    cv2.waitKey(20)
-    cv2.destroyAllWindows
+def show_frame(camera):
+	if(not camera.isOpened()):
+    		print("camera not opened")
+	else:
+    		print("camera opened")
+    		_, frame = camera.read()
+    		cv2.waitKey(20)
+    		cv2.imshow('Frame', frame)
+    		cv2.waitKey(200)
+    		cv2.destroyAllWindows()
 
 video_detector = VideoObjectDetection()
 
@@ -40,25 +41,30 @@ def objectsInFrame(frame_number, output_array, output_count, returned_frame):
     items = len(output_count)
     print("objects in frame %i" % items)
     string = ""
+    objects_string = ""
     for eachItem in output_array:
         ob = str(eachItem['name']) + "-" + str(eachItem['percentage_probability']) + "|"
         string += ob
+	objects_string += str(eachItem['name']) + "|"
     print(string)
-    pub_str.publish(string)
+    pub_str.publish(objects_string)
     return string 
 
-def detectVideo(detector): 
-    video_detector.detectCustomObjectsFromVideo(output_file_path=os.path.join(execution_path, "./output/camera_video_detected"), 
-    camera_input=camera, frames_per_second=20, log_progress=True, minimum_percentage_probability=70, 
+def detectVideo(detector):
+	print("detecting video...") 
+    	video_detector.detectCustomObjectsFromVideo(output_file_path=os.path.join(execution_path, "./output/camera_video_detected"), 
+    camera_input=camera, frames_per_second=10, log_progress=True, minimum_percentage_probability=80, 
     per_frame_function=objectsInFrame, save_detected_video=False, custom_objects=custom, return_detected_frame=True)
 
 def talker():
-        rospy.sleep(1)
+	print("talker...")
         rospy.init_node('Detector', anonymous=True)
-        detectVideo(video_detector)
-        rospy.spin()
+	while(True):	
+        	detectVideo(video_detector)
 
 if __name__ == '__main__':
+	show_frame(camera)
+	
 	try:
 		talker()
 	except rospy.ROSInterruptException:

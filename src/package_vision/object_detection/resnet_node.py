@@ -56,7 +56,7 @@ def talker():
         rospy.sleep(1)
         rospy.init_node('Detector', anonymous=True)
         detectVideo(video_detector_resnet)
-        rospy.spin()
+        #rospy.spin()
 
 if __name__ == '__main__':
 	try:
