@@ -20,9 +20,9 @@ def show_frame(camera):
 
 video_detector = VideoObjectDetection()
 
-model_path = "./models/resnet50_coco_best_v2.0.1.h5"
+model_path = "./models/yolo.h5"
 
-video_detector.setModelTypeAsRetinaNet()
+video_detector.setModelTypeAsYOLOv3()
 
 video_detector.setModelPath(model_path)
 
