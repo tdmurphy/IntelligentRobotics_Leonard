@@ -15,10 +15,8 @@ def show_frame(camera):
     		print("camera opened")
     		_, frame = camera.read()
     		cv2.waitKey(20)
-    		cv2.imshow('Frame', frame)
-    		cv2.waitKey(0)
-		cv2.imwrite('./output/camera_view.png', frame)
-    		cv2.destroyAllWindows()
+		cv2.imwrite('camera_view.png', frame)
+    		#cv2.destroyAllWindows()
 
 video_detector = VideoObjectDetection()
 
@@ -69,5 +67,4 @@ if __name__ == '__main__':
 		talker()
 	except rospy.ROSInterruptException:
 		pass 
-
 
