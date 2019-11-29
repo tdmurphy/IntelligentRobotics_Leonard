@@ -209,13 +209,13 @@ def listenForCommand():
     processedSpeech = ""
 
     if "leonard" in text.lower():
-        beginConversation()
+        beginConversation("Hello")
 
 
-def beginConversation():
+def beginConversation(opener):
     global processedSpeech
     
-    response = sendToDialogflow("Hello")
+    response = sendToDialogflow(opener)
     waitUntilDone(response.query_result.fulfillment_text)
 
     request = waitForMessage()
@@ -231,7 +231,32 @@ def beginConversation():
 
 
 def deliverTask(data):
+	global processedSpeech
     print(data.data)
+
+    tasksToDeliver = data.data.split("#")
+    recipient = tasksToDeliver[0].split("|")[2]
+
+    if len(taskPublisher) == 1:
+    	waitUntilDone("Hello {0}, I have {1} task to deliver to you".format(recipient,len(tasksToDeliver)))
+    else:
+    	waitUntilDone("Hello {0}, I have {1} tasks to deliver to you".format(recipient,len(tasksToDeliver)))
+
+    for task in tasksToDeliver:
+    	taskinfo = task.split("|")
+
+    	if taskInfo[0] == "message":
+    		waitUntilDone("I have a message from {0} for you, the message is as follows: {1}".format(taskInfo[1],taskInfo[3]))
+    	else:
+    		objectsBeforeCollect = numObjects
+    		obTaken = False
+    		waitUntilDone("I have a package from {0} for you, please take it".format(taskInfo[1]))
+    		while not obTaken:
+    			if objectsBeforeCollect != numObjects:
+    				obTaken = True
+    		print("object taken")
+
+    beginConversation("Thats everything I have for you, is there anything I could do for you?")
 
 
 def objectsDetected(data):
