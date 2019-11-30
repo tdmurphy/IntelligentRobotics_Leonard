@@ -14,6 +14,7 @@ class scheduler():
         self.taskList=[]
         self.taskWeights={}
         self.currentTask=None
+	self.current_pos=[0,0]
         self.loc=Locator()
     
     def newTask(self,task):
@@ -30,7 +31,7 @@ class scheduler():
 	self.reSchedule()
 
     def adjustWeight(self,task,weight):
-	self.taskWeights[task]=self.taskWeights[task]+weight
+	self.taskWeights[task]=self.getWeight(task)+weight
 	self.reSchedule()
 
     def getWeight(self,task):
@@ -40,31 +41,36 @@ class scheduler():
     def reSchedule(self):
         if (len(self.taskList)==0):
             return
-        self.currentTask= max(self.taskWeights, key=self.taskWeights.get)        
+        self.currentTask= max(self.taskWeights, key=self.taskWeights.get) 
         
     def getTask(self):
 	if (len(self.taskList)==0):
             return
-        return self.currentTask.taskID, self.taskWeights[self.currentTask]
+        return self.currentTask, self.taskWeights[self.currentTask]
 
     def getTarget(self):
 	if (len(self.taskList)==0):
             return
 	return self.currentTask.recipient
+
+    def updatePos(self, current_pos):	
+	self.current_pos=current_pos
     
     def getCurrentPosition(self): #replace with a subscription to odom
-        return [0,0]
+        return self.current_pos
     
-    def getGoalPos(self, goal):
-        return self.loc.getLocation(goal)
+    def getGoalPos(self, goal,person):
+        return self.loc.getLocation(goal,person)
     
     def getDistance(self, pos,goalPos):  #euclidean atm
         return ((pos[0]-goalPos[0])**2+(pos[1]-goalPos[1])**2)**0.5
     
     def getDistanceWeight(self,task):            
         pos=self.getCurrentPosition()
-        goalPos=self.getGoalPos(task.location)
+        goalPos=self.getGoalPos(task.location,task.recipient)
+	task.destinationPos=goalPos
         distance=self.getDistance(pos,goalPos)
+	print("Going from",pos,"to",goalPos,"for task",task.taskID)
         distanceWeight=1/distance
         return distanceWeight
     
@@ -84,6 +90,3 @@ class scheduler():
             modifierWeight=100
         return modifierWeight
 
-    def TargetLastSeen(self,task):
-	#return self.loc.lastSeen(task.recipient)
-        pass

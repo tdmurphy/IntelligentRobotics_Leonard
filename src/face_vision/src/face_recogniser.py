@@ -101,6 +101,8 @@ class FacialRecogniser():
         print("Looking for",self.target, "And I know",self.known_face_names)
         
     def setBackgroundTarget(self,person_to_back,new_target):
+	if(new_target==self.target):
+		return
 	if (person_to_back not in self.backgroundPeople):
 		self.backgroundPeople.append(person_to_back)
 	self.setCurrentTarget(new_target)	

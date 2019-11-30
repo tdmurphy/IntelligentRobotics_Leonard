@@ -1,2 +1,11 @@
-Benet:100 100
-London:300 300
+LG04:545 196
+Main Robotics Lab:136 307
+Robotics Lab:79 330
+Medical Imaging:127 418
+Printer:252 337
+Vending Machines:210 348
+Table 0:202 324
+Table 1:257 295
+Booth 1:316 270
+Booth 2:363 241
+Booth 3:420 216
