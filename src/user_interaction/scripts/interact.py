@@ -13,6 +13,7 @@ from std_msgs.msg import String, Int32
 taskPublisher = rospy.Publisher('new_task', String, queue_size=100)
 speakPublisher = rospy.Publisher('speak_msg', String, queue_size=100)
 listenPublisher = rospy.Publisher('start_listening', String, queue_size=100)
+stopPublisher = rospy.Publisher('stop_moving', String, queue_size=100)
 
 #Globals for speech recognition
 listener = sr.Recognizer()
@@ -205,6 +206,8 @@ def createPkgTask(response):
 def listenForCommand():
     global processedSpeech
 
+    stopPublisher.publish("move")
+
     text = waitForMessage()
     processedSpeech = ""
 
@@ -214,6 +217,8 @@ def listenForCommand():
 
 def beginConversation(opener):
     global processedSpeech
+
+    stopPublisher.publish("stop")
     
     response = sendToDialogflow(opener)
     waitUntilDone(response.query_result.fulfillment_text)
