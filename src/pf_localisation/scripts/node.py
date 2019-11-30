@@ -9,9 +9,7 @@ pf.PFLocaliser() to do the localisation.
 import rospy
 import pf_localisation.pf
 from pf_localisation.util import *
-
-from geometry_msgs.msg import ( PoseStamped, PoseWithCovarianceStamped,
-                                PoseArray, Quaternion )
+from geometry_msgs.msg import ( PoseStamped, PoseWithCovarianceStamped,PoseArray, Quaternion )
 from tf.msg import tfMessage
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import OccupancyGrid, Odometry
@@ -68,18 +66,14 @@ class ParticleFilterLocalisationNode(object):
         self._cloud_publisher.publish(self._particle_filter.particlecloud)
 
     def _odometry_callback(self, odometry):
-        """
-        Odometry received. If the filter is initialised then execute
-        a filter predict step with odeometry followed by an update step using
-        the latest laser.
-        """
-        if self._initial_pose_received:
-            t_odom = self._particle_filter.predict_from_odometry(odometry)
-            t_filter = self._particle_filter.update_filter(self._latest_scan)
-            if t_odom + t_filter > 0.1:
-                rospy.logwarn("Filter cycle overran timeslot")
-                rospy.loginfo("Odometry update: %fs"%t_odom)
-                rospy.loginfo("Particle update: %fs"%t_filter)
+    	print(self._initial_pose_received)
+    	if self._initial_pose_received:
+    		t_odom = self._particle_filter.predict_from_odometry(odometry)
+    		t_filter = self._particle_filter.update_filter(self._latest_scan)
+    		if t_odom + t_filter > 0.1:
+    			rospy.logwarn("Filter cycle overran timeslot")
+    			rospy.loginfo("Odometry update: %fs"%t_odom)
+    			rospy.loginfo("Particle update: %fs"%t_filter)
     
     def _laser_callback(self, scan):
         """
@@ -88,7 +82,6 @@ class ParticleFilterLocalisationNode(object):
         """
         self._latest_scan = scan
         if self._initial_pose_received:
-	    print "POSE"
             if  self._sufficientMovementDetected(self._particle_filter.estimatedpose):
                 # ----- Publish the new pose
                 self._amcl_pose_publisher.publish(self._particle_filter.estimatedpose)

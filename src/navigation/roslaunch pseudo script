@@ -1,0 +1,17 @@
+roscore
+rosrun map_sever map_sever clean_map.yaml
+rosrun amcl amcl scan:=base_scan
+rosrun rviz rviz
+~/catkin_ws$ rosrun map_server map_server clean_map.yaml
+
+~/catkin_ws$ rosrun stage_ros stageros clean_map.world
+
+rosrun stage_ros stageros clean_map.world
+
+cd /catkin_ws/src/exploration/scripts ---- python hug_wall.py
+cd /catkin_ws/src/assignment1/scripts ---- python laser_subscriber.py
+
+rviz:
+ -- add by topic --- PoseArray
+                       --- /Map
+					   ---/LaserScan

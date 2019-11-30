@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="fake_scheduler" type="fake_scheduler_node.py" name="fake_scheduler" output="screen" />
+	<include file="/home/joe/catkin_ws/src/exploration/launch/exploration.launch" />
+	<include file="/home/joe/catkin_ws/src/assignment1/launch/laser_subscriber.launch" />
+</launch>

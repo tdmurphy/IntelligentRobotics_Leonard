@@ -160,11 +160,6 @@ class SensorModel(object):
         # ----- Part 4: Random measurements
         if obs_range < self.scan_range_max:
             pz += self.z_rand * 1.0/ self.scan_range_max
-
-	if(math.isnan(pz)):
-		pz=0
-
-
     
         assert(pz <= 1.0)
         assert(pz >= 0.0)

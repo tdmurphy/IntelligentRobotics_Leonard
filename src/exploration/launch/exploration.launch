@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="exploration" type="hug_wall.py" name="Mover" output="screen"/>
+</launch>
