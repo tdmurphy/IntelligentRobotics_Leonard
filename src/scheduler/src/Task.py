@@ -11,6 +11,7 @@ class Task():
         self.urgent=modifier
         self.current=current
 	self.original=original
+	self.destinationPos=[0,0]
 
     def printTask(self):
         print("ID: "+str(self.taskID)+ " "+str(self.sender)+" -> " +str(self.recipient)+" : "+str(self.payLoad)+" : "+str(self.location)+": now? : "+str(self.current))

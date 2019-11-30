@@ -23,7 +23,8 @@ def tester(tasks,published):
  
 if __name__ == '__main__':
      try:
-	t1= 'message|Tom|Esha|Test Message||0'
+	#taskType, sender, recipient, payLoad, location, modifier
+	t1='message|Tom|Esha|:D||0' 
 	tasks=[t1]
 	published=False
         tester(tasks,published)
