@@ -9,14 +9,17 @@ import rospy
 from std_msgs.msg import String, Int32
 
 
-#Publishes new task
+#Publishers
 taskPublisher = rospy.Publisher('new_task', String, queue_size=100)
-speakPublisher = rospy.Publisher('speak_msg', String, queue_size=100)
-listenPublisher = rospy.Publisher('start_listening', String, queue_size=100)
+speakPublisher = rospy.Publisher('speak_msg', String, queue_size=1)
+listenPublisher = rospy.Publisher('start_listening', String, queue_size=1)
 stopPublisher = rospy.Publisher('stop_moving', String, queue_size=100)
+deliverPublisher = rospy.Publisher('delivered', String, queue_size=100)
+
 
 #Global for listen control - wont background listen if delivering task(s)
 delivering = False
+justDelivered = False
 
 #Globals for speech recognition
 listener = sr.Recognizer()
@@ -137,7 +140,7 @@ def createMsgTask(response):
     confirmation = waitForMessage()
     processedSpeech = ""
     print(confirmation)
-    if "yes" in confirmation.lower():
+    if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         waitUntilDone("Great! I'll get round to it. Thank you")
         sendTask("message",sender, recipient, msgToSend, "", urgency)
     else:
@@ -189,7 +192,7 @@ def createPkgTask(response):
     confirmation = waitForMessage()
     processedSpeech = ""
     print(confirmation)
-    if "yes" in confirmation.lower():
+    if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         objectsBeforePlacement = numObjects
         obNotAdded = True
         waitUntilDone("Great! Please give me the item you want to deliver")
@@ -209,22 +212,28 @@ def createPkgTask(response):
 def listenForCommand():
     global processedSpeech
 
-    if not delivering:
+    if not delivering and not justDelivered:
 
     	text = waitForMessage()
     	processedSpeech = ""
 
     	if "leonard" in text.lower():
         	beginConversation("Hello")
+    elif justDelivered:
+    	beginConversation("Thats's everything I have for you, is there anything else I can do?")
 
 
 def beginConversation(opener):
-    global processedSpeech
+    global processedSpeech, justDelivered
 
     stopPublisher.publish("stop")
     
-    response = sendToDialogflow(opener)
-    waitUntilDone(response.query_result.fulfillment_text)
+    if opener == "Hello":
+    	response = sendToDialogflow(opener)
+    	waitUntilDone(response.query_result.fulfillment_text)
+    else:
+    	waitUntilDone(opener)
+    	justDelivered = False
 
     request = waitForMessage()
     processedSpeech = ""
@@ -240,7 +249,7 @@ def beginConversation(opener):
 
 
 def deliverTask(data):
-	global processedSpeech, delivering
+	global delivering, justDelivered
 	delivering = True
 	print(data.data)
 
@@ -270,8 +279,9 @@ def deliverTask(data):
 				if objectsBeforeCollect != numObjects:
 					obTaken = True
 					print("object taken")
-
-	beginConversation("Thats everything I have for you, is there anything I could do for you?")
+	delivering = False
+	justDelivered = True
+	deliverPublisher.publish(recipient)
 
 
 def objectsDetected(data):
