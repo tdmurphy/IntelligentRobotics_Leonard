@@ -6,35 +6,45 @@ from face_recogniser import FacialRecogniser
 
 found_person = rospy.Publisher('found_person',String,queue_size=100)
 fg= FacialRecogniser()
+backgroundPeopletoAdd=[]
+peopleToRemove=[]
 
 def backgroundRecognise(data):
     global fg
+    global backgroundPeopletoAdd
     person=data.data.split("|")[0]
     new_target=data.data.split("|")[1]
-    print("From background recognise",data.data)
-    target=None
-    if(fg.video_capture!=None):
+    print("Been told that recognising",data.data,"is a backgroundtask")
+    #target=None
+    backgroundPeopletoAdd.append(person)
+    #if(fg.video_capture!=None):
 	#print("closing from node")
     	#fg.close_Screen()
-	fg.setBackgroundTarget(person,new_target)
+	#fg.setBackgroundTarget(person,new_target)
 	#print("opening from node, background")
 	#fg.new_Screen()
-    fg.setBackgroundTarget(person,new_target)       
-    print("Setting finding",person," to background job ",fg.target)
+    #fg.setBackgroundTarget(person,new_target)       
+    #print("Setting finding",person," to background job ",fg.target)
     
 
 
 def recognise(data):    
     global fg
+    global backgroundPeopletoAdd
+
     if(fg.video_capture!=None):
-	print("closing from node, current")
+	print("Given new person to recognise, closing the window")
     	fg.close_Screen()
     person=data.data
     target=None
-    print("Trying to find",person)
-    if person in fg.backgroundPeople:	
-	fg.backgroundPeople.remove(person)
+    print("Trying to find",person)    
+
+    if person in backgroundPeopletoAdd:	
+	backgroundPeopletoAdd.remove(person)
 	print("Finding",person," was a background task. Promoting to current. BG Tasks atm",fg.backgroundPeople)
+
+    for bp in backgroundPeopletoAdd:
+	fg.backgroundPeople.append(bp)
 
     fg.setCurrentTarget(person)   
     print("1")    	
@@ -61,8 +71,13 @@ def recognise(data):
 
  
 
-def stopSearch(data):    
-    face_recogniser.removeTarget(data.data)    
+def stopSearch(data): 
+    global peopleToRemove 
+    global backgroundPeopletoAdd    
+    if data.data in backgroundPeopletoAdd:
+	backgroundPeopletoAdd.remove(data.data)
+    else:	
+        peopleToRemove.append(data.data)
 
 def listener():
     print("Listening")    
