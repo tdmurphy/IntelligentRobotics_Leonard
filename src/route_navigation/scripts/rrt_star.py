@@ -251,13 +251,17 @@ def rrt(start, dest):
         for n in nearest_nodes:
             if n >= len(ktree.data):
                 break
-            if check_line(ktree.data[n], environment_rand_point, False):
+            if check_line(ktree.data[n], environment_rand_point):
                 print("selected: ", ktree.data[n])
                 nodes.append(environment_rand_point)
                 tree[tuple(environment_rand_point)] = Node(tree[tuple(ktree.data[n])], environment_rand_point)
-                (tree[tuple(environment_rand_point)]).nextNodes.append(tree[tuple(environment_rand_point)])
-                check_line(ktree.data[n], environment_rand_point, True)
-                #self.draw_points(draw_line_between_points(environment_rand_point, ktree.data[n]), 10, 'clean_map_updated.png', 'clean_map_updated.png')
+                bestNode = tree[tuple(ktree.data[n])]
+                while not (bestNode.prevNode==None):
+                    if not check_line(bestNode.coords, environment_rand_point):
+                        break
+                    else:
+                        tree[tuple(environment_rand_point)].nextNode = bestNode
+                        bestNode = bestNode.prevNode
                 break
 
         #check if goal is acheivable:
@@ -266,15 +270,22 @@ def rrt(start, dest):
         for n in nearest_nodes:
             if n >= len(ktree.data):
                 break
-            if check_line(ktree.data[n], dest, False):
+            if check_line(ktree.data[n], dest):
                 print ("Got goal")
-                tree[tuple(self.dest_clicked_point)]= Node(tree[tuple(ktree.data[n])], dest)
-                (tree[tuple(dest)]).nextNodes.append(tree[tuple(dest)])
-                check_line(ktree.data[n], dest, True)
+                tree[tuple(dest)]= Node(tree[tuple(ktree.data[n])], dest)
                 notDone = False
                 break
 
         print(nodes)
+
+    n = tree[tuple(dest)]
+    ret = [dest]
+
+    while (not (n.prevNode == None)):
+        ret.insert(0, n.coords)
+        n = n.prevNode
+
+    return ret
         
 
 # def RRT(start, destination):
