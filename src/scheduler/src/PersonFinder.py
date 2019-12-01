@@ -20,6 +20,7 @@ from matplotlib.cbook import get_sample_data
 from scipy.stats import multivariate_normal
 from std_msgs.msg import String,Float32MultiArray
 from geometry_msgs.msg import PoseStamped
+from random import randint, seed
 
 
 pf=None
@@ -124,6 +125,20 @@ class PersonFinder:
 
 		plt.show()
 
+	def getRandomPopularLoc(self):
+		seed(1)
+		locationList=[]
+		f= open("knownLocations.txt","r+")
+		fLines=f.readlines()
+		for line in fLines:
+		    placeName= line.split(':')[0]    
+		    placeCord= np.fromstring(line.split(':')[1], sep=' ')
+		    if(placeName not in locationList):
+		        locationList.append(placeCord)
+		f.close()
+		randNum=randint(0,len(locationList)-1)
+		return locationList[randNum][0],locationList[randNum][1]
+
 	def getMostLikelyCord(self,person):
 		Z = self.getZValues(person)
 		maxVal,maxValX,maxValY=0,-1,-1
@@ -133,6 +148,9 @@ class PersonFinder:
 					maxVal=Z[x][y]
 					maxValX=x
 					maxValY=y
+		if(person not in PersonFinder.distributions):
+			print("Trying somewhere popular")
+			maxValX,maxValY=self.getRandomPopularLoc()
 		print(person,"is most likely to be at [",maxValX,",",maxValY,"]")
 		print(maxValX,maxValY)
 		#self.plotGraph(person)
@@ -151,7 +169,7 @@ def listener():
     global pf
     print("Listening")
     pf=PersonFinder()
-    pf.getMostLikelyCord('Esha')
+    pf.getMostLikelyCord('Tom')
     rospy.init_node('personFinder', anonymous=True)
     rospy.Subscriber("deliver", String, seenSomeone)
     rospy.Subscriber("estimatedpose", PoseStamped, setCurrentPosition)
