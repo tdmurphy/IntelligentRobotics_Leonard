@@ -5,6 +5,7 @@ import numpy as np
 import random
 import scipy as scp
 from sklearn.neighbors import KDTree
+import os, sys
 
 DIRNAME = os.path.dirname(__file__)
 UIPATH  = os.path.join(DIRNAME, '../ui/')
@@ -40,7 +41,7 @@ def occupancy_grid(image_path):
 
 	return (Matrix)
 
-OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_updated.png'))
+OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_simple.png'))
 
 class Node:
     prevNode = None
@@ -127,84 +128,72 @@ def draw_line_between_points(point1, point2):
 	return all_pixals_on_line
 
 
-def color_pixals(points_x_y, rgb):  
-	#for all points
-	for i in range(len(points_x_y)):
-		picture.putpixel((points_x_y[i][0], points_x_y[i][1]), (100))
-		picture.save("clean_map_updated_lines.png")
-
-#goal1 80, 300
-#goal2 500, 200
-
-point1 = [80, 300]
-point2 = [90, 200]
-
-g = draw_line_between_points(point1, point2)
-
-print(g)
-
-rgb = [30, 245, 3]
-color_pixals(g,rgb)
+#def color_pixals(points_x_y, rgb):  
+#	#for all points
+#	for i in range(len(points_x_y)):
+#		picture.putpixel((points_x_y[i][0], points_x_y[i][1]), (100))
+#		picture.save("clean_map_updated_lines.png")
 
 
 
-def simplify_image():
+#def simplify_image():
+#
+#
+#	# Get the size of the image
+#	width, height = picture.size
+#
+#	#the image from slam is made up of several greyscale rgb values. A more simple
+#	#black and white image will be more simple when creating an occupancy grid. 
+#	##RGB with 255 or 254 are white areas in map that are UNoccupied. So we ensure all areas are 254
+#
+#	new_color = 254
+#	count = 0
+##	# Process every pixel
+#	for x in range (width):
+#		for y in range (height):
+#			current_color = picture.getpixel( (x,y) )
+#			if current_color == 255 :
+#				picture.putpixel((x,y), (new_color))
+#
+#	#all areas that are grey are unexplored. We will change this to black, and assume area is occupied
+#	new_color = 0
+#	for x in range (width):
+ #  		for y in range (height):
+  # 			current_color = picture.getpixel((x,y))
+   #			if current_color != 254 : 
+   #				picture.putpixel((x,y), (new_color))
+#
+#
+#	# now we rewrite the image to new black and white comprising of only two rgb values
+##	picture.save("clean_map_updated.png")
+#
+#
+#	#now we create an occupancy grid from therefore image data teh same dimentions as the image size
+#	#	. if the area is black it is occupied and is therefore true. If unoccupued = false
+#	Matrix = [[0 for x in range(height)] for y in range(width)] 
+#
+#	for x in range (width):
+ #  		for y in range (height):
+  # 			current_color = picture.getpixel( (x,y) )
+   #			print("current color upd ", current_color)
+#   			if current_color == 254:
+ #  				print("x,y ", x, "  ", y)
+  # 				Matrix[x][y] = 0
+#
+ #  			print("unoc ", Matrix[x][y])
+  ## 			print("width,", width," ")
+   #			print("height",height, " ")
+   #		else:
+   #			print("x,y ", x, "  ", y)
+   #			Matrix[x][y] = 1
+   #			print("oc ", Matrix[x][y])
+   #			print("width,", width," ")
+   #			print("height",height, " ")
+#
+#	print(Matrix)
 
-
-	# Get the size of the image
-	width, height = picture.size
-
-	#the image from slam is made up of several greyscale rgb values. A more simple
-	#black and white image will be more simple when creating an occupancy grid. 
-	##RGB with 255 or 254 are white areas in map that are UNoccupied. So we ensure all areas are 254
-
-	new_color = 254
-	count = 0
-	# Process every pixel
-	for x in range (width):
-		for y in range (height):
-			current_color = picture.getpixel( (x,y) )
-			if current_color == 255 :
-				picture.putpixel((x,y), (new_color))
-
-	#all areas that are grey are unexplored. We will change this to black, and assume area is occupied
-	new_color = 0
-	for x in range (width):
-   		for y in range (height):
-   			current_color = picture.getpixel((x,y))
-   			if current_color != 254 : 
-   				picture.putpixel((x,y), (new_color))
-
-
-	# now we rewrite the image to new black and white comprising of only two rgb values
-	picture.save("clean_map_updated.png")
-
-
-	#now we create an occupancy grid from therefore image data teh same dimentions as the image size
-	#	. if the area is black it is occupied and is therefore true. If unoccupued = false
-	Matrix = [[0 for x in range(height)] for y in range(width)] 
-
-	for x in range (width):
-   		for y in range (height):
-   			current_color = picture.getpixel( (x,y) )
-   			print("current color upd ", current_color)
-   			if current_color == 254:
-   				print("x,y ", x, "  ", y)
-   				Matrix[x][y] = 0
-
-   			print("unoc ", Matrix[x][y])
-   			print("width,", width," ")
-   			print("height",height, " ")
-   		else:
-   			print("x,y ", x, "  ", y)
-   			Matrix[x][y] = 1
-   			print("oc ", Matrix[x][y])
-   			print("width,", width," ")
-   			print("height",height, " ")
-
-	print(Matrix)
-
-def check_line(self, start, end):
+def check_line(start, end):
+    print(start, end, "chck")
     y_step = float(end[1] - start[1])/float(end[0] - start[0])
     y_counter = float (0)
 
@@ -212,11 +201,11 @@ def check_line(self, start, end):
     if start[0] > end[0]:
         inc = -1
 
-    print("ystep: ", y_step, start, end)
+    #print("ystep: ", y_step, start, end)
 
     for x in range(start[0], end[0], inc):
         y_counter += y_step*inc
-        print("checking: ", x, start[1] + int(y_counter))
+        #print("checking: ", x, start[1] + int(y_counter))
         if (OCCUPANCY[x][int(start[1] + y_counter)] == 1):
             return False
 
@@ -224,22 +213,22 @@ def check_line(self, start, end):
 
 def rrt(start, dest):
     print("init_point------", start)
-    notDone = False
+    notDone = True
     nodes = [start]
-    tree = {tuple(start) = Node(None, start)}
+    tree = {tuple(start) : Node(None, start)}
 
     enivronment_rand_point = [0,0]
 
     while (notDone):
         while (True):
-            enviro_x = np.random.randint(width)
-            enviro_y = np.random.randint(height)
+            enviro_x = np.random.randint(len(OCCUPANCY))
+            enviro_y = np.random.randint(len(OCCUPANCY[0]))
 
             environment_rand_point = [enviro_x, enviro_y]
             if (OCCUPANCY[enviro_x][enviro_y] == 0):
                 break
 
-        print("environment_rand_point ",environment_rand_point)
+        #print("environment_rand_point ",environment_rand_point)
         selected = False
 
 
@@ -247,7 +236,7 @@ def rrt(start, dest):
         ktree = scp.spatial.KDTree(nodes)
 
         nearest_nodes = ktree.query(environment_rand_point, 20)[1]
-        print ("nearest: ", nearest_nodes)
+        #print ("nearest: ", nearest_nodes)
         for n in nearest_nodes:
             if n >= len(ktree.data):
                 break
@@ -278,7 +267,7 @@ def rrt(start, dest):
 
         print(nodes)
 
-    n = tree[tuple(dest)]
+    n = tree.get(tuple(dest))
     ret = [dest]
 
     while (not (n.prevNode == None)):
@@ -286,7 +275,18 @@ def rrt(start, dest):
         n = n.prevNode
 
     return ret
-        
+
+def getCost(directions):
+    if len(directions) <= 1:
+        return 0
+    else:
+        ret = 0
+        for i in range(1, len(directions)-1):
+            xDist = directions[i][0] - directions[i-1][0]
+            yDist = directions[i][1] - directions[i-1][1]
+            ret += sqrt(xDist^2 + yDist^2)
+        return ret
+
 
 # def RRT(start, destination):
 # 	#first point
