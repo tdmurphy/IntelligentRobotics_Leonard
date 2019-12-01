@@ -38,10 +38,11 @@ def schedule(data):
     new_task=createTask(data)
     scheduler.updatePos(current_pos)
     scheduler.newTask(new_task)
+    print("Background Target:",new_task.recipient)
     pub_message_backgroundTarget=String()    
       
     #if recipient same as target, don't set to background?
-    print("Background Target:",new_task.recipient)
+    
     CurrentTask, weight= scheduler.getTask()
     destination=CurrentTask.destinationPos
     print("Current Task:",CurrentTask.taskID,CurrentTask.recipient,destination)
@@ -54,11 +55,14 @@ def schedule(data):
     pub_message = Float32MultiArray()
     pub_message.data = destination
     destination_pose.publish(pub_message) 
+
     print("Current Target:",scheduler.getTarget())
     pub_message_target=String()
-    pub_message_target.data=scheduler.getTarget()     
+    pub_message_target.data=scheduler.getTarget()    
+
     pub_message_backgroundTarget.data=new_task.recipient+"|"+scheduler.getTarget()
     target_background.publish(pub_message_backgroundTarget)
+
     target_current.publish(pub_message_target) 
 
 def recalculate(data):
@@ -69,13 +73,16 @@ def recalculate(data):
     scheduler.updatePos(current_pos)
     person=data.data
     message=''
+    switchingTask=False
+    oldTarget=scheduler.getTarget()
     for task in list(scheduler.taskWeights.keys()):
 	if (person==task.recipient):
     	     scheduler.adjustWeight(task, weight_seenbackgroundTarget)
 	else:
 	     scheduler.adjustWeight(task, 0)
     print("Target is now",scheduler.getTarget(), scheduler.getTask())
-    activateLeonard(scheduler.getTarget())
+    if oldTarget!=scheduler.getTarget():
+    	activateLeonard(scheduler.getTarget())
 
 def activateLeonard(person):
     print("Creating return message")
@@ -84,13 +91,26 @@ def activateLeonard(person):
 	if (person==task.recipient):
 		print(task.taskID," is for",task.recipient)
 		message=message+task.original+"#"
-		scheduler.removeTask(task)
 		print("No of tasks left",len(scheduler.taskList))
     pub_message_target=String()
     print("Message:",message)
     pub_message_target.data=message
     talker.publish(pub_message_target)	
     
+def RemoveAndRecalculate(data):
+    person=data.data
+    for task in list(scheduler.taskWeights.keys()):
+	if (person==task.recipient):
+		print("Removing Task",task.taskID,"as it has been completed")
+		scheduler.removeTask(task)
+    scheduler.reSchedule()
+    CurrentTask, weight= scheduler.getTask()
+    pub_message = Float32MultiArray()
+    pub_message.data = destination
+    destination_pose.publish(pub_message) 
+    print("Current Target is now:",scheduler.getTarget())
+    pub_message_target=String()
+    target_current.publish(pub_message_target) 
 
 def listener():
     print("Listening")
@@ -98,7 +118,7 @@ def listener():
     rospy.Subscriber("new_task", String, schedule)
     rospy.Subscriber("found_person", String, recalculate)
     rospy.Subscriber("estimatedpose", PoseStamped, setCurrentPosition)
-
+    rospy.Subscriber("delivered", String, RemoveAndRecalculate)
     rospy.spin()
 
 if __name__ == '__main__':

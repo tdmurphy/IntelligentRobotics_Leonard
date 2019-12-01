@@ -8,21 +8,26 @@ found_person = rospy.Publisher('found_person',String,queue_size=100)
 fg= FacialRecogniser()
 
 def backgroundRecognise(data):
+    global fg
     person=data.data.split("|")[0]
     new_target=data.data.split("|")[1]
     print("From background recognise",data.data)
     target=None
     if(fg.video_capture!=None):
-    	fg.close_Screen()
+	#print("closing from node")
+    	#fg.close_Screen()
 	fg.setBackgroundTarget(person,new_target)
-	fg.new_Screen()
+	#print("opening from node, background")
+	#fg.new_Screen()
     fg.setBackgroundTarget(person,new_target)       
     print("Setting finding",person," to background job ",fg.target)
- 
+    
 
 
-def recognise(data):
+def recognise(data):    
+    global fg
     if(fg.video_capture!=None):
+	print("closing from node, current")
     	fg.close_Screen()
     person=data.data
     target=None
@@ -34,8 +39,9 @@ def recognise(data):
     fg.setCurrentTarget(person)   
     print("1")    	
     while(target==None): 
-	print("2")
+	print("2, opening from node, current")
     	target=fg.new_Screen()
+	print("new screen returns",target)
 	print("3")
     	if(target==person):
     		print("Found Current Target:",target,"!!")

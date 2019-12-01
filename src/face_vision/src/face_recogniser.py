@@ -65,13 +65,13 @@ class FacialRecogniser():
 	#print("Looking for",self.target, "Background searching",self.backgroundPeople)
         if ((self.target != None) and (self.target in self.peoplePresent)):
             # found person! Send message back!
-	    self.close_Screen()
+	    #self.close_Screen()
 	    return True, self.target
 	for person in self.backgroundPeople:
 		if person in self.peoplePresent:
 		    # found background person! Send message back!
 		    print("Found",person," in fg")
-	            self.close_Screen()
+	            #self.close_Screen()
 	    	    return True, person
         for (top, right, bottom, left), name in zip(face_locations, face_names):
                 top *= 4
@@ -140,21 +140,25 @@ class FacialRecogniser():
     def new_Screen(self):
 	print("Opening Screen",self.target)
         self.init_people()
-        self.video_capture = cv2.VideoCapture(5)    
+	print("Before opening video")
+        self.video_capture = cv2.VideoCapture(4)   
+	print("After opening video") 
         unknownNames={}
 
         face_locations = []
         face_encodings = []
         face_names = []
         process_this_frame = True
-        
+        print("REACHES 1")
         while True:
             ret, frame = self.video_capture.read()    
-            #print("1",frame)
+            print("REACHES 1.5")
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-            #print("2")
+            print("2")
             rgb_small_frame = small_frame[:, :, ::-1]
+	    #print("REACHES 2",frame)	
             cv2.imshow('Video', frame)
+	    print("REACHES 3")
             if process_this_frame:
                 face_locations = face_recognition.face_locations(rgb_small_frame)
                 face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
@@ -187,11 +191,13 @@ class FacialRecogniser():
             
             Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame)  
 	    if (Found!=None):
+		print("Before closing video here, found",foundPerson)
 		self.close_Screen()
+		print("After closing video here")
 		return foundPerson          
             
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break   
 
-        self.close_Screen()
+        #self.close_Screen()
         return 

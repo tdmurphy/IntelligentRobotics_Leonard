@@ -24,8 +24,9 @@ def tester(tasks,published):
 if __name__ == '__main__':
      try:
 	#taskType, sender, recipient, payLoad, location, modifier
-	t1='message|Tom|Esha|:D||0' 
-	tasks=[t1]
+	t1='message|Tom|Esha|hi||0'
+	t2='message|Esha|Tom|hello, I hate robotics||1' 
+	tasks=[t1,t2]
 	published=False
         tester(tasks,published)
      except rospy.ROSInterruptException:

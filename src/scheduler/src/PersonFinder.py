@@ -88,6 +88,7 @@ class PersonFinder:
 		else:		
 			PersonFinder.distributions[person]=[cord]
 			if new:
+				print("Writing to KnownPeopleLocations",person+":"+str(cord[0])+" "+str(cord[1])+"\n")
 				f.write(person+":"+str(cord[0])+" "+str(cord[1])+"\n")
 		f.close()
 		#print("In update dist",PersonFinder.distributions[person])
@@ -160,7 +161,7 @@ def setCurrentPosition(data):
 	PersonFinder.current_pos=[estimatedpose.x,estimatedpose.y]
 
 def seenSomeone(data):
-	person=data.data
+	person=data.data.split('|')[2]
 	print("Saw",person,"at",PersonFinder.current_pos)
 	pf.updateDist(person,PersonFinder.current_pos)
    
