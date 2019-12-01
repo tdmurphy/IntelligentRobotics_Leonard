@@ -6,7 +6,7 @@ import rospy
 from std_msgs.msg import Bool, String, Int32
 
 execution_path = os.getcwd()
-camera = cv2.VideoCapture(2)
+camera = cv2.VideoCapture(0)
 
 def show_frame(camera):
 	if(not camera.isOpened()):

@@ -23,12 +23,12 @@ class Locator():
         
     def getLocation(self,place,person):
         if place in self.locationList:
-	        print("Looking for a room")
-            return self.locationList[place]
+		print("Looking for a room")
+            	return self.locationList[place]
         else:
 	        print("Looking for a person's location")
 	        return self.estimatePersonLocation(person)
-	    return [0,0]
+	return [0,0]
 
 
     def estimatePersonLocation(self, person):

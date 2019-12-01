@@ -20,15 +20,17 @@ from matplotlib.cbook import get_sample_data
 from scipy.stats import multivariate_normal
 from std_msgs.msg import String,Float32MultiArray
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PoseStamped
 
 
+pf = None
 
 
 class PersonFinder:
 	distributions={}
 	current_pos=[0,0]
 	def __init__(self):
-		self.picture = Image.open("/home/esha/catkin_ws/src/route_navigation/clean_map_updated.png")
+		self.picture = Image.open("/data/private/robot/catkin_ws/src/route_navigation/clean_map_updated.png")
 		
 		self.width, self.height = self.picture.size
 		self.X = np.arange(0, self.width, 1)
@@ -121,25 +123,28 @@ class PersonFinder:
 					maxVal=Z[x][y]
 					maxValX=x
 					maxValY=y
+		#if flat, return a random popular loc instead
 		print(person,"is most likely to be at [",maxValX,",",maxValY,"]")
 		print(maxValX,maxValY)
 		#self.plotGraph(person)
 		return[maxValX,maxValY]
 
 def setCurrentPosition(data):
-	odomPose = data.data.pose.pose.position
-	PersonFinder.current_pos=[odomPose.x,odomPose.y]
+	EstimatePosition = data.data.pose.position
+	PersonFinder.current_pos=[EstimatePosition.x,EstimatePosition.y]
 
 def seenSomeone(data):
 	person=data.data
-	pf.updateDist(person,current_pos)
+	print("Seen",person,"at",PersonFinder.current_pos)
+	pf.updateDist(person,PersonFinder.current_pos)
    
 def listener():
+    global pf
     print("Listening")
-    pf=PersonFinger()
+    pf=PersonFinder()
     rospy.init_node('personFinder', anonymous=True)
     rospy.Subscriber("deliver", String, seenSomeone)
-    rospy.Subscriber("odom", Odometry, setCurrentPosition)
+    rospy.Subscriber("estimatedpose", PoseStamped, setCurrentPosition)
     rospy.spin()
 
 if __name__ == '__main__':

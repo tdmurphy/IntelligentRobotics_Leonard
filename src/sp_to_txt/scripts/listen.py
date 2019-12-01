@@ -19,7 +19,7 @@ def processAudio():
 		with sr.Microphone() as source:
 			listener.adjust_for_ambient_noise(source, duration=1)
 			rospy.loginfo("Node is listening")
-			audio = listener.listen(source, timeout=5)
+			audio = listener.listen(source)
 			rospy.loginfo("Captured audio. Processing...")
 		try:
 			text = listener.recognize_google(audio)

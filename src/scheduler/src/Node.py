@@ -1,6 +1,7 @@
 import rospy
 from std_msgs.msg import String,Float32MultiArray
 from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PoseStamped
 import numpy as np
 import sys
 #import nbimporter
@@ -18,8 +19,8 @@ current_pos=[0,0]
 weight_seenbackgroundTarget=150
 
 def setCurrentPosition(data):
-    odomPose = data.data.pose.pose.position
-    current_pos=[odomPose.x,odomPose.y]
+    EstimatePosition = data.data.pose.position
+    current_pos=[EstimatePosition.x,EstimatePosition.y]
 
 def createTask(data):
     parts=data.data.split("|")
@@ -96,7 +97,7 @@ def listener():
     rospy.init_node('scheduler', anonymous=True)
     rospy.Subscriber("new_task", String, schedule)
     rospy.Subscriber("found_person", String, recalculate)
-    rospy.Subscriber("odom", Odometry, setCurrentPosition)
+    rospy.Subscriber("estimatedpose", PoseStamped, setCurrentPosition)
 
     rospy.spin()
 
