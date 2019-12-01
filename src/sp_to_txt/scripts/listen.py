@@ -1,6 +1,7 @@
 import speech_recognition as sr
 import rospy
 from std_msgs.msg import String
+import os
 
 
 #Global for speech recognition
@@ -18,9 +19,11 @@ def processAudio():
 		rospy.loginfo("Begun listening")
 		with sr.Microphone() as source:
 			listener.adjust_for_ambient_noise(source, duration=1)
+			print('\a')
 			rospy.loginfo("Node is listening")
 			audio = listener.listen(source)
 			rospy.loginfo("Captured audio. Processing...")
+			print('\a')
 		try:
 			text = listener.recognize_google(audio)
 			rospy.loginfo("Audio processed as : " + text)

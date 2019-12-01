@@ -15,6 +15,9 @@ speakPublisher = rospy.Publisher('speak_msg', String, queue_size=100)
 listenPublisher = rospy.Publisher('start_listening', String, queue_size=100)
 stopPublisher = rospy.Publisher('stop_moving', String, queue_size=100)
 
+#Global for listen control - wont background listen if delivering task(s)
+delivering = False
+
 #Globals for speech recognition
 listener = sr.Recognizer()
 client = None
@@ -206,13 +209,13 @@ def createPkgTask(response):
 def listenForCommand():
     global processedSpeech
 
-    stopPublisher.publish("move")
+    if not delivering:
 
-    text = waitForMessage()
-    processedSpeech = ""
+    	text = waitForMessage()
+    	processedSpeech = ""
 
-    if "leonard" in text.lower():
-        beginConversation("Hello")
+    	if "leonard" in text.lower():
+        	beginConversation("Hello")
 
 
 def beginConversation(opener):
@@ -233,35 +236,42 @@ def beginConversation(opener):
         createPkgTask(result)
     else:
         waitUntilDone(result.query_result.fulfillment_text)
+        stopPublisher.publish("move")
 
 
 def deliverTask(data):
-	global processedSpeech
-    print(data.data)
+	global processedSpeech, delivering
+	delivering = True
+	print(data.data)
 
-    tasksToDeliver = data.data.split("#")
-    recipient = tasksToDeliver[0].split("|")[2]
+	tasks = data.data.split("#")
+	tasksToDeliver = []
+	for task in tasks:
+		if task != "":
+			tasksToDeliver.append(task)
 
-    if len(taskPublisher) == 1:
-    	waitUntilDone("Hello {0}, I have {1} task to deliver to you".format(recipient,len(tasksToDeliver)))
-    else:
-    	waitUntilDone("Hello {0}, I have {1} tasks to deliver to you".format(recipient,len(tasksToDeliver)))
+	recipient = tasksToDeliver[0].split("|")[2]
 
-    for task in tasksToDeliver:
-    	taskinfo = task.split("|")
+	if len(tasksToDeliver) == 1:
+		waitUntilDone("Hello {0}, I have {1} task to deliver to you".format(recipient,len(tasksToDeliver)))
+	else:
+		waitUntilDone("Hello {0}, I have {1} tasks to deliver to you".format(recipient,len(tasksToDeliver)))
 
-    	if taskInfo[0] == "message":
-    		waitUntilDone("I have a message from {0} for you, the message is as follows: {1}".format(taskInfo[1],taskInfo[3]))
-    	else:
-    		objectsBeforeCollect = numObjects
-    		obTaken = False
-    		waitUntilDone("I have a package from {0} for you, please take it".format(taskInfo[1]))
-    		while not obTaken:
-    			if objectsBeforeCollect != numObjects:
-    				obTaken = True
-    		print("object taken")
+	for task in tasksToDeliver:
+		taskInfo = task.split("|")
 
-    beginConversation("Thats everything I have for you, is there anything I could do for you?")
+		if taskInfo[0] == "message":
+			waitUntilDone("I have a message from {0} for you, the message is as follows: {1}".format(taskInfo[1],taskInfo[3]))
+		else:
+			objectsBeforeCollect = numObjects
+			obTaken = False
+			waitUntilDone("I have a package from {0} for you, please take it".format(taskInfo[1]))
+			while not obTaken:
+				if objectsBeforeCollect != numObjects:
+					obTaken = True
+					print("object taken")
+
+	beginConversation("Thats everything I have for you, is there anything I could do for you?")
 
 
 def objectsDetected(data):
