@@ -19,10 +19,10 @@ from matplotlib._png import read_png
 from matplotlib.cbook import get_sample_data
 from scipy.stats import multivariate_normal
 from std_msgs.msg import String,Float32MultiArray
-from nav_msgs.msg import Odometry
+from geometry_msgs.msg import PoseStamped
 
 
-
+pf=None
 
 class PersonFinder:
 	distributions={}
@@ -42,7 +42,7 @@ class PersonFinder:
 			for personCord in list_of_cords:
 				personCord= np.fromstring(personCord, sep=' ')
 				print("Updating for",personName,personCord)
-				self.updateDist(personName, personCord)
+				self.updateDist(personName, personCord,False)
 		f.close()
 		for key in PersonFinder.distributions:
 			print(key,PersonFinder.distributions[key])
@@ -73,12 +73,24 @@ class PersonFinder:
 			i-=1
 		return G
 
-	def updateDist(self,person, cord):
+	def updateDist(self,person, cord,new='True'):
+		f= open("KnownPeopleLocations.txt","a+")
+		fLines=f.readlines()
+		if(new):
+			for index in range (0,len(fLines)):
+				personName= fLines[index].split(':')[0]    
+				if personName==person:
+					cords=fLines[index].split(':')[1]+"|"+str(cord[0])+" "+str(cord[1])
+					fLines[index]=personName+":"+cords+"\n"
+
 		if person in PersonFinder.distributions:
 			PersonFinder.distributions[person]=np.append(PersonFinder.distributions[person],[cord],axis=0)
 		else:		
 			PersonFinder.distributions[person]=[cord]
-		print("In update dist",PersonFinder.distributions[person])
+			if new:
+				f.write(person+":"+str(cord[0])+" "+str(cord[1])+"\n")
+		f.close()
+		#print("In update dist",PersonFinder.distributions[person])
 
 	def getDistribution(self,person):	
 		print("Looking for",person, "and I know",PersonFinder.distributions.keys())
@@ -127,22 +139,25 @@ class PersonFinder:
 		return[maxValX,maxValY]
 
 def setCurrentPosition(data):
-	odomPose = data.data.pose.pose.position
-	PersonFinder.current_pos=[odomPose.x,odomPose.y]
+	estimatedpose = data.data.pose.position
+	PersonFinder.current_pos=[estimatedpose.x,estimatedpose.y]
 
 def seenSomeone(data):
 	person=data.data
-	pf.updateDist(person,current_pos)
+	print("Saw",person,"at",PersonFinder.current_pos)
+	pf.updateDist(person,PersonFinder.current_pos)
    
 def listener():
+    global pf
     print("Listening")
-    pf=PersonFinger()
+    pf=PersonFinder()
+    pf.getMostLikelyCord('Esha')
     rospy.init_node('personFinder', anonymous=True)
     rospy.Subscriber("deliver", String, seenSomeone)
-    rospy.Subscriber("odom", Odometry, setCurrentPosition)
+    rospy.Subscriber("estimatedpose", PoseStamped, setCurrentPosition)
     rospy.spin()
 
-if __name__ == '__main__':
+if __name__ == '__main__':    
     listener()
 
 
