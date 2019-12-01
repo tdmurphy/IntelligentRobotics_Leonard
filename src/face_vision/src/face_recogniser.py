@@ -62,7 +62,7 @@ class FacialRecogniser():
         
     def displayNames(self,face_locations, face_names,cv2,frame):
         self.peoplePresent=face_names
-	#print("Looking for",self.target, "Background searching",self.backgroundPeople)
+	print("Looking for",self.target, "Background searching",self.backgroundPeople, "The people present are",self.peoplePresent)
         if ((self.target != None) and (self.target in self.peoplePresent)):
             # found person! Send message back!
 	    #self.close_Screen()
@@ -88,7 +88,7 @@ class FacialRecogniser():
           
     def setCurrentTarget(self,person):
         if(self.target==None):
-            print("Finding new person")
+            print("Finding new person",person)
             self.target=person
         elif((self.target!=None) and(self.target!=person)):
 	    if (self.target not in self.backgroundPeople):
@@ -141,7 +141,7 @@ class FacialRecogniser():
 	print("Opening Screen",self.target)
         self.init_people()
 	print("Before opening video")
-        self.video_capture = cv2.VideoCapture(0)   
+        self.video_capture = cv2.VideoCapture(4)   
 	print("After opening video") 
         unknownNames={}
 
@@ -152,13 +152,13 @@ class FacialRecogniser():
         print("REACHES 1")
         while True:
             ret, frame = self.video_capture.read()    
-            print("REACHES 1.5")
+            #print("REACHES 1.5")
             small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-            print("2")
+            #print("2")
             rgb_small_frame = small_frame[:, :, ::-1]
 	    #print("REACHES 2",frame)	
             cv2.imshow('Video', frame)
-	    print("REACHES 3")
+	    #print("REACHES 3")
             if process_this_frame:
                 face_locations = face_recognition.face_locations(rgb_small_frame)
                 face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
@@ -190,6 +190,7 @@ class FacialRecogniser():
             process_this_frame = not process_this_frame
             
             Found, foundPerson=self.displayNames(face_locations, face_names,cv2, frame)  
+	    print(Found, foundPerson)
 	    if (Found!=None):
 		print("Before closing video here, found",foundPerson)
 		self.close_Screen()
