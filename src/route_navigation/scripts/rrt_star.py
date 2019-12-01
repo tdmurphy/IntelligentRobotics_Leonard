@@ -191,6 +191,15 @@ def draw_line_between_points(point1, point2):
    #			print("height",height, " ")
 #
 #	print(Matrix)
+def checkPoint(point):
+    checker = [point[0]-2, point[1]-2]
+    while checker[0] <= point[0]+2:
+        while checker[1] <= point[0]+2:
+            if OCCUPANCY[checker[0]][checker[1]] == 1:
+                return false
+            checker[1] += 1
+        checker[0]+=1
+    return True
 
 def check_line(start, end):
     print(start, end, "chck")
@@ -206,7 +215,7 @@ def check_line(start, end):
     for x in range(start[0], end[0], inc):
         y_counter += y_step*inc
         #print("checking: ", x, start[1] + int(y_counter))
-        if (OCCUPANCY[x][int(start[1] + y_counter)] == 1):
+        if (OCCUPANCY[x][int(start[1] + y_counter)] == 1):#(checkPoint([x, int(start[1] + y_counter)])):#
             return False
 
     return True
@@ -221,8 +230,8 @@ def rrt(start, dest):
 
     while (notDone):
         while (True):
-            enviro_x = np.random.randint(len(OCCUPANCY))
-            enviro_y = np.random.randint(len(OCCUPANCY[0]))
+            enviro_x = np.random.randint(len(OCCUPANCY) - 10) + 5
+            enviro_y = np.random.randint(len(OCCUPANCY[0]) - 10) + 5
 
             environment_rand_point = [enviro_x, enviro_y]
             if (OCCUPANCY[enviro_x][enviro_y] == 0):

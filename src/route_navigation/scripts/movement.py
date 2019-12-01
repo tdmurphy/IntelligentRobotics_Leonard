@@ -11,7 +11,7 @@ import rrt_star
 #constants
 VELOCITY = 0.4
 ANGULAR_VEL = 0.2
-DETECTING_RANGE = 0.5
+DETECTING_RANGE = 0.3
 GRANULARITY = 19
 base_data = Twist()
 MOVE = True
@@ -24,6 +24,8 @@ AVOIDING = False
 AMCL = None
 DEST = None
 HEADING = 0
+
+routePublisher = rospy.Publisher('/route_nodes', Float32MultiArray, queue_size=100)
 
 
 def poseSubscriber (localisation_pos):
@@ -38,7 +40,7 @@ def poseSubscriber (localisation_pos):
     origin_translation = [int(actual_resolution_x), int(522 - actual_resolution_y)]
 
     AMCL = origin_translation
-    HEADING = localisation_pos.pose.position.z
+    HEADING = localisation_pos.pose.pose.position.z
     print (AMCL)
 
 def destSubscriber (dest):
@@ -75,6 +77,7 @@ def checkInBoundary(p1, p2):
 
 def moveBot (data):
     global AVOIDING, ON_PATH, DIRECTIONS, TURNED_LEFT 
+
     thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
     increment = int(len(zipped)/(GRANULARITY/3))
@@ -116,19 +119,28 @@ def moveBot (data):
 
     if len(DIRECTIONS) == 0 and (not (DEST == None)):
         DIRECTIONS = rrt_star.rrt(AMCL, DEST)
+        onedDirection = []
+        for d in DIRECTIONS:
+            onedDirection.append(d[0])
+            onedDirection.append(d[1])
+        print onedDirection
+        message = Float32MultiArray()
+        message.data = onedDirection
+        routePublisher.publish(message)
 
     if MOVE and (not (AMCL == None)) and (not (DEST == None)):
         print ("i'm moving yo")
+        print('DIRECTIONS: ', DIRECTIONS)
         if crash or AVOIDING:
             print("2fast2furious")
             if (not AVOIDING) or crash:
                 base_data.linear.x=0
                 if not frontLeftDetecting or not farLeftDetecting:
-                    base_data.angular.z = 0.7
+                    base_data.angular.z = -0.7
                     TURNED_LEFT = True
                     print('turning left')
                 else:
-                    base_data.angular.z = -0.7
+                    base_data.angular.z = 0.7
                     TURNED_LEFT = False
                     print('turning right')
                 AVOIDING = True
@@ -148,6 +160,9 @@ def moveBot (data):
             print("off course")
             AVOIDING = False
             DIRECTIONS = rrt_star.rrt(AMCL, DEST)
+            #message = Float32MultiArray()
+            #message.data = DIRECTIONS
+            #routePublisher.publish(message)
             #rand_V5.renderGui(DIRECTIONS)
             if checkInBoundary(AMCL, DEST):
                 #reached end goal
