@@ -6,7 +6,7 @@ import rospy
 from std_msgs.msg import Bool, String, Int32
 
 execution_path = os.getcwd()
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(2)
 
 def show_frame(camera):
 	if(not camera.isOpened()):
@@ -15,13 +15,13 @@ def show_frame(camera):
     		print("camera opened")
     		_, frame = camera.read()
     		cv2.waitKey(20)
-    		cv2.imshow('Frame', frame)
-    		cv2.waitKey(200)
-    		cv2.destroyAllWindows()
+		cv2.imwrite('camera_view.png', frame)
+    		#cv2.destroyAllWindows()
 
 video_detector = VideoObjectDetection()
 
-model_path = "./models/yolo-tiny.h5"
+#model_path = "./models/yolo-tiny.h5"
+model_path = "models/detection_model-ex-030--loss-0002.725.h5"
 
 video_detector.setModelTypeAsTinyYOLOv3()
 
@@ -61,8 +61,7 @@ def detectVideo(detector):
 def talker():
 	print("talker...")
         rospy.init_node('Detector', anonymous=True)
-	while(True):	
-        	detectVideo(video_detector)
+	detectVideo(video_detector)
 
 if __name__ == '__main__':
 	show_frame(camera)
@@ -71,5 +70,4 @@ if __name__ == '__main__':
 		talker()
 	except rospy.ROSInterruptException:
 		pass 
-
 
