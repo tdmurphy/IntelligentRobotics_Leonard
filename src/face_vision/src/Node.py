@@ -27,7 +27,7 @@ def handleScreen(current_target,backgroundPeople):
 	backgroundPeopletoAdd=[]
 	fg.setCurrentTarget(current_target)
 	target=fg.new_Screen()
-	print("Found",target,"from people to find. Was looking for",fg.target,"and",fg.backgroundPeople)
+	print("Found", target, "from people to find. Was looking for", fg.target, "and", fg.backgroundPeople)
 	return target
 
 def backgroundRecognise(data):
