@@ -1,4 +1,4 @@
-from imageai.Detection import ObjectDetection, VideoObjectDetection
+from imageai.Detection import ObjectDetection, VideoObjectDetection, CustomVideoObjectDetection
 import os
 import cv2
 from matplotlib import pyplot as plt
@@ -17,6 +17,12 @@ def show_frame(camera):
     		cv2.waitKey(20)
 		cv2.imwrite('camera_view.png', frame)
     		#cv2.destroyAllWindows()
+
+video_detector = CustomVideoObjectDetection()
+video_detector.setModelTypeAsYOLOv3()
+video_detector.setModelPath("hololens-ex-60--loss-2.76.h5")
+video_detector.setJsonPath("detection_config.json")
+video_detector.loadModel()
 
 video_detector = VideoObjectDetection()
 
