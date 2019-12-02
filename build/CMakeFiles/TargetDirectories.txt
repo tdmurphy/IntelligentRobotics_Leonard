@@ -141,6 +141,13 @@
 /data/private/robot/catkin_ws/build/pf_localisation/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir
 /data/private/robot/catkin_ws/build/pf_localisation/CMakeFiles/roscpp_generate_messages_cpp.dir
 /data/private/robot/catkin_ws/build/pf_localisation/CMakeFiles/actionlib_generate_messages_cpp.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/install/strip.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/edit_cache.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/list_install_components.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/test.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/install/local.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/rebuild_cache.dir
+/data/private/robot/catkin_ws/build/txt_to_sp/CMakeFiles/install.dir
 /data/private/robot/catkin_ws/build/user_interaction/CMakeFiles/install/strip.dir
 /data/private/robot/catkin_ws/build/user_interaction/CMakeFiles/edit_cache.dir
 /data/private/robot/catkin_ws/build/user_interaction/CMakeFiles/list_install_components.dir
