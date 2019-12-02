@@ -7,6 +7,7 @@ import numpy as np
 import math
 import scipy as scp
 import rrt_star
+import sys
 
 #constants
 VELOCITY = 0.4
@@ -26,8 +27,22 @@ DEST = None
 TURNED_LEFT = False
 HEADING = 0
 LAST_ODOM = None
+TRUEPOSE = None
 
 routePublisher = rospy.Publisher('/route_nodes', Float32MultiArray, queue_size=100)
+
+def getHeading2(q):
+    """
+    Get the robot heading in radians from a Quaternion representation.
+
+    :Args:
+        | q (geometry_msgs.msg.Quaternion): a orientation about the z-axis
+    :Return:
+        | (double): Equivalent orientation about the z-axis in radians
+    """
+    yaw = math.atan2(2 * (q.x * q.y + q.w * q.z),
+                     q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z)
+    return yaw
 
 def odomSubscriber (data):
     global LAST_ODOM, HEADING, AMCL
@@ -41,20 +56,21 @@ def odomSubscriber (data):
     return 420
 
 def poseSubscriber (localisation_pos):
-    global AMCL, HEADING, LAST_ODOM
+    global AMCL, HEADING, LAST_ODOM, TRUEPOSE
     LAST_ODOM = None
     print(localisation_pos)
-    actual_resolution_x = localisation_pos.pose.pose.position.x/0.05
-    actual_resolution_y = localisation_pos.pose.pose.position.y/0.05
+    actual_resolution_x = localisation_pos.pose.pose.position.x*(605./662.)*10
+    actual_resolution_y = localisation_pos.pose.pose.position.y*(528./639.)*10
 
     print("actual x ",actual_resolution_x)
     print("actual y",actual_resolution_y)
 
-    origin_translation = [int(actual_resolution_x), int(522 - actual_resolution_y)]
+    origin_translation = [int(actual_resolution_x), 529 - int(actual_resolution_y)]
 
+    TRUEPOSE = [localisation_pos.pose.pose.position.x, localisation_pos.pose.pose.position.y]
     AMCL = origin_translation
-    HEADING = localisation_pos.pose.pose.orientation.z
-    print ('AMCL: ', AMCL)
+    HEADING = getHeading2(localisation_pos.pose.pose.orientation)
+    print ('original amcl: ', [localisation_pos.pose.pose.position.x, localisation_pos.pose.pose.position.y],'AMCL: ', AMCL)
     print ('heading: ', HEADING)
 
 def destSubscriber (dest):
@@ -76,6 +92,7 @@ def getHeading (pose, dest, heading):
     mapAngle = math.atan(xDist/yDist)
 
     print("getheading: ", pose, dest, heading)
+    print("original coords: ", TRUEPOSE)
     print("mapAngle: ", mapAngle)
     print('total: ', (mapAngle - HEADING))
     return mapAngle - HEADING #(????)
@@ -143,8 +160,11 @@ def moveBot (data):
 
     crash = frontLeftDetecting or midDetecting or frontRightDetecting
 
+
     if len(DIRECTIONS) == 0 and (not (DEST == None)):
+        print(":(")
         DIRECTIONS = rrt_star.rrt(AMCL, DEST)
+        print("whyyyy")
         onedDirection = []
         for d in DIRECTIONS:
             onedDirection.append(d[0])
@@ -153,6 +173,7 @@ def moveBot (data):
         message = Float32MultiArray()
         message.data = onedDirection
         routePublisher.publish(message)
+
 
     if MOVE and (not (AMCL == None)) and (not (DEST == None)):
         print ("i'm moving yo")
@@ -226,7 +247,7 @@ def moveBot (data):
                 DIRECTIONS.pop(0)
             elif not abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE:
                 print('reorientating')
-                base_data.linear.x=0
+                #base_data.linear.x=0
                 base_data.angular.z=np.sign(getHeading(AMCL, DIRECTIONS[0], HEADING))/10
                 #ON_PATH=False
             else:

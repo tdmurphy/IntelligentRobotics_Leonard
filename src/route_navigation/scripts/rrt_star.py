@@ -25,8 +25,8 @@ def occupancy_grid(image_path):
    		for y in range (height):
    			current_color = picture.getpixel( (x,y) )
    			print("current color upd ", current_color)
-   			if current_color == 254:
-   				#print("x,y ", x, "  ", y)
+   			if current_color == (254, 254, 254):
+   				print("x,y ", x, "  ", y)
    				Matrix[x][y] = 0
    				#print("unoc ", Matrix[x][y])
    				#print("width,", width," ")
@@ -35,13 +35,14 @@ def occupancy_grid(image_path):
    			else:
    				#print("x,y ", x, "  ", y)
    				Matrix[x][y] = 1
+                                print()
    				#print("oc ", Matrix[x][y])
    				#print("width,", width," ")
    				#print("height",height, " ")
 
 	return (Matrix)
 
-OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_simple.png'))
+OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_simple2.png'))
 
 class Node:
     prevNode = None
@@ -192,11 +193,11 @@ def draw_line_between_points(point1, point2):
 #
 #	print(Matrix)
 def checkPoint(point):
-    checker = [point[0]-2, point[1]-2]
-    while checker[0] <= point[0]+2:
-        while checker[1] <= point[0]+2:
+    checker = [point[0]-7, point[1]-7]
+    while checker[0] <= point[0]+7:
+        while checker[1] <= point[0]+7:
             if OCCUPANCY[checker[0]][checker[1]] == 1:
-                return false
+                return False
             checker[1] += 1
         checker[0]+=1
     return True
@@ -210,7 +211,7 @@ def check_line(start, end):
     if start[0] > end[0]:
         inc = -1
 
-    #print("ystep: ", y_step, start, end)
+    print("ystep: ", y_step, start, end)
 
     for x in range(start[0], end[0], inc):
         y_counter += y_step*inc
@@ -245,7 +246,7 @@ def rrt(start, dest):
         selected = False
 
 
-        print("nodes: ", nodes)
+       # print("nodes: ", nodes)
         ktree = scp.spatial.KDTree(nodes)
 
         nearest_nodes = ktree.query(environment_rand_point, 20)[1]
@@ -254,7 +255,7 @@ def rrt(start, dest):
             if n >= len(ktree.data):
                 break
             if check_line(ktree.data[n], environment_rand_point):
-                print("selected: ", ktree.data[n])
+                #print("selected: ", ktree.data[n])
                 nodes.append(environment_rand_point)
                 tree[tuple(environment_rand_point)] = Node(tree[tuple(ktree.data[n])], environment_rand_point)
                 bestNode = tree[tuple(ktree.data[n])]
@@ -267,7 +268,7 @@ def rrt(start, dest):
                 break
 
         #check if goal is acheivable:
-        print("nearest to end: ", nearest_nodes)
+        #print("nearest to end: ", nearest_nodes)
         nearest_nodes = ktree.query(dest, 20)[1]
         for n in nearest_nodes:
             if n >= len(ktree.data):
@@ -278,7 +279,7 @@ def rrt(start, dest):
                 notDone = False
                 break
 
-        print(nodes)
+        #print(nodes)
 
     n = tree.get(tuple(dest))
     ret = [dest]
