@@ -95,7 +95,7 @@ def recognise(data):
 		#pub_message = String()
     		#pub_message.data = target
     		#found_person.publish(pub_message) 	
-    	else:
+    	else:   #not always sees a background target so don't publish
 		print("Oh, so I found a background target?",found)
 	pub_message = String()
     	pub_message.data = found
@@ -115,8 +115,10 @@ def CarryOn(data):
 def stopSearch(data):  
     global backgroundPeopletoAdd 
     global currentTarget   
+    global fg
     if data.data in backgroundPeopletoAdd:
 	backgroundPeopletoAdd.remove(data.data)
+        fg.removeTarget(data.data)
     if(currentTarget==data.data):	
         currentTarget=None
     handleScreen(currentTarget,backgroundPeopletoAdd)

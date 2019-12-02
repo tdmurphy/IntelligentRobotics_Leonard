@@ -84,6 +84,7 @@ def recalculate(data):
     print("Target is now",scheduler.getTarget(), scheduler.getTask())
     if oldTarget!=scheduler.getTarget():
 	print("schduler decided to update the task order")
+    if(person==scheduler.getTarget()):
     	activateLeonard(scheduler.getTarget())
 
 def activateLeonard(person):
@@ -110,14 +111,16 @@ def RemoveAndRecalculate(data):
     target_remove.publish(pub_message) 
 
     scheduler.reSchedule()
-
-    CurrentTask, weight= scheduler.getTask()
-    pub_message = Float32MultiArray()
-    pub_message.data = destination
-    destination_pose.publish(pub_message) 
-    print("Current Target is now:",scheduler.getTarget())
-    pub_message_target=String()
-    target_current.publish(pub_message_target) 
+    
+    if (len(scheduler.taskList)>0): 
+        CurrentTask, weight= scheduler.getTask()
+        destination=CurrentTask.destinationPos
+        pub_message = Float32MultiArray()
+        pub_message.data = destination
+        destination_pose.publish(pub_message) 
+        print("Current Target is now:",scheduler.getTarget())
+        pub_message_target=String()
+        target_current.publish(pub_message_target) 
 
 def listener():
     print("Listening")

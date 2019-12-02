@@ -7,7 +7,7 @@ import numpy as np
 class FacialRecogniser():
     
     def __init__(self):
-	    self.camera=0
+	self.camera=0
         self.known_face_encodings = []
         self.known_face_names =[]
         self.unknownCount=0
@@ -16,7 +16,7 @@ class FacialRecogniser():
         self.peoplePresent=[]
         self.backgroundPeople=[]
         self.init_people()
-	    self.video_capture=cv2.VideoCapture(self.camera)
+	self.video_capture=cv2.VideoCapture(self.camera)
         #self.resetFile("knownFaces.txt")
         #self.new_Screen()
         
@@ -63,26 +63,26 @@ class FacialRecogniser():
         
     def displayNames(self,face_locations, face_names,cv2,frame):
         self.peoplePresent=face_names
-	    #print("Looking for",self.target, "Background searching",self.backgroundPeople)
+	#print("Looking for",self.target, "Background searching",self.backgroundPeople)
         if ((self.target != None) and (self.target in self.peoplePresent)):
             # found person! Send message back!
 	    #self.close_Screen()
 	    return True, self.target
 	for person in self.backgroundPeople:
-		if person in self.peoplePresent:
-		    # found background person! Send message back!
-		    #print("Found",person," in fg")
-	            #self.close_Screen()
-	    	    return True, person
+	    if person in self.peoplePresent:
+	        # found background person! Send message back!
+	        #print("Found",person," in fg")
+	        #self.close_Screen()
+	        return True, person
         for (top, right, bottom, left), name in zip(face_locations, face_names):
-                top *= 4
-                right *= 4
-                bottom *= 4
-                left *= 4
-                cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 3)
-                cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-                font = cv2.FONT_HERSHEY_DUPLEX
-                cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+            top *= 4
+            right *= 4
+            bottom *= 4
+            left *= 4
+            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 3)
+            cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
+            font = cv2.FONT_HERSHEY_DUPLEX
+            cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
         cv2.imshow('Video', frame)
         return None, ''
 
@@ -99,7 +99,7 @@ class FacialRecogniser():
         #self.currentTargetUnknownOrNoTarget=False
 	#if person in self.backgroundPeople:
 	#    self.backgroundPeople.remove(person)
-	    self.target=person
+	self.target=person
         print("Looking for",self.target, "And I know",self.known_face_names)
         
    # def setBackgroundTarget(self,person_to_back,new_target):
@@ -136,16 +136,16 @@ class FacialRecogniser():
 
     def close_Screen(self):
         self.video_capture.release()
-	    self.video_capture=None
-	    print("Closing screen",self.target, self.video_capture)
+	self.video_capture=None
+	print("Closing screen",self.target, self.video_capture)
         cv2.destroyAllWindows()
         
     def new_Screen(self):
-	    print("Opening Screen",self.target)
+	print("Opening Screen",self.target)
         self.init_people()
-	    #print("Before opening video")
+	print("Before opening video")
         self.video_capture = cv2.VideoCapture(self.camera)   
-	    #print("After opening video")
+	print("After opening video")
         unknownNames={}
 
         face_locations = []
