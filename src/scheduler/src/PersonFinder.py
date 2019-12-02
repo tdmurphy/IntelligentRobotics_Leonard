@@ -28,7 +28,7 @@ class PersonFinder:
 	distributions={}
 	current_pos=[0,0]
 	def __init__(self):
-		self.picture = Image.open("/data/private/robot/catkin_ws/src/route_navigation/clean_map_updated.png")
+		self.picture = Image.open("/home/esha/catkin_ws/src/route_navigation/clean_map_updated.png")
 		
 		self.width, self.height = self.picture.size
 		self.X = np.arange(0, self.width, 1)
@@ -41,11 +41,11 @@ class PersonFinder:
 			list_of_cords=line.split(':')[1].split("|")
 			for personCord in list_of_cords:
 				personCord= np.fromstring(personCord, sep=' ')
-				print("Updating for",personName,personCord)
+				#print("Updating for",personName,personCord)
 				self.updateDist(personName, personCord,False)
 		f.close()
-		for key in PersonFinder.distributions:
-			print(key,PersonFinder.distributions[key])
+		#for key in PersonFinder.distributions:
+			#print(key,PersonFinder.distributions[key])
 
 	def getGaussian(self,cord):	
 		mu=[cord[0],cord[1]]
@@ -68,7 +68,7 @@ class PersonFinder:
 		G = np.zeros((len(self.X),len(self.X[0])))
 		i=len(cordList)-1
 		for cord in cordList:
-			print("Factor of",pow(0.9,i),"for",cord)
+			#print("Factor of",pow(0.9,i),"for",cord)
 			G+=self.getGaussian(cord)*pow(0.9,i)
 			i-=1
 		return G
@@ -94,12 +94,12 @@ class PersonFinder:
 		#print("In update dist",PersonFinder.distributions[person])
 
 	def getDistribution(self,person):	
-		print("Looking for",person, "and I know",PersonFinder.distributions.keys())
+		#print("Looking for",person, "and I know",PersonFinder.distributions.keys())
 		if person in PersonFinder.distributions:
-			print(len(PersonFinder.distributions[person]))
+			#print(len(PersonFinder.distributions[person]))
 			return self.getDist(PersonFinder.distributions[person])
 		else:
-			print("Have not seen this person before")
+			#print("Have not seen this person before")
 			return np.zeros((len(self.X),len(self.X[0])))
 
 	def getZValues(self,person):
@@ -149,10 +149,10 @@ class PersonFinder:
 					maxValX=x
 					maxValY=y
 		if(person not in PersonFinder.distributions):
-			print("Trying somewhere popular")
+			#print("Trying somewhere popular")
 			maxValX,maxValY=self.getRandomPopularLoc()
 		print(person,"is most likely to be at [",maxValX,",",maxValY,"]")
-		print(maxValX,maxValY)
+		#print(maxValX,maxValY)
 		#self.plotGraph(person)
 		return[maxValX,maxValY]
 

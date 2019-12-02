@@ -23,16 +23,16 @@ class Locator():
         
     def getLocation(self,place,person):
         if place in self.locationList:
-		print("Looking for a room")
+		#print("Looking for a room")
             	return self.locationList[place]
         else:
-	        print("Looking for a person's location")
+	        #print("Looking for a person's location")
 	        return self.estimatePersonLocation(person)
 	return [0,0]
 
 
     def estimatePersonLocation(self, person):
-	    print("Estimating",person,"'s location",self.pf.distributions.keys())
+	    #print("Estimating",person,"'s location",self.pf.distributions.keys())
 	    return self.pf.getMostLikelyCord(person)
 
 

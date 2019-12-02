@@ -14,7 +14,7 @@ class Task():
 	self.destinationPos=[0,0]
 
     def printTask(self):
-        print("ID: "+str(self.taskID)+ " "+str(self.sender)+" -> " +str(self.recipient)+" : "+str(self.payLoad)+" : "+str(self.location)+": now? : "+str(self.current))
+        print("ID: "+str(self.taskID)+ " "+str(self.sender)+" -> " +str(self.recipient)+" : "+str(self.payLoad)+" :at "+str(self.location)+": urgent : "+str(self.urgent))
         
         
         
