@@ -20,7 +20,8 @@ def show_frame(camera):
 
 video_detector = VideoObjectDetection()
 
-model_path = "./models/yolo-tiny.h5"
+#model_path = "./models/yolo-tiny.h5"
+model_path = "models/detection_model-ex-030--loss-0002.725.h5"
 
 video_detector.setModelTypeAsTinyYOLOv3()
 
