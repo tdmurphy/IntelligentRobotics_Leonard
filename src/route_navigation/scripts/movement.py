@@ -11,7 +11,7 @@ import rrt_star
 #constants
 VELOCITY = 0.4
 ANGULAR_VEL = 0.2
-DETECTING_RANGE = 0.3
+DETECTING_RANGE = 0.6
 GRANULARITY = 19
 base_data = Twist()
 MOVE = True
@@ -19,17 +19,30 @@ pub = rospy.Publisher('cmd_vel', Twist, queue_size=100)
 DIRECTIONS = []
 WAYPOINT_BOUNDARY = 0.5
 ON_PATH = True
-HEADING_TOLERANCE = 0.01
+HEADING_TOLERANCE = 0.11
 AVOIDING = False
 AMCL = None
 DEST = None
+TURNED_LEFT = False
 HEADING = 0
+LAST_ODOM = None
 
 routePublisher = rospy.Publisher('/route_nodes', Float32MultiArray, queue_size=100)
 
+def odomSubscriber (data):
+    global LAST_ODOM, HEADING, AMCL
+    if LAST_ODOM == None:
+        LAST_ODOM = data
+        return 69
+    
+    AMCL[0] += int(data.pose.pose.position.x - LAST_ODOM.pose.pose.position.x)
+    AMCL[1] += int(data.pose.pose.position.y - LAST_ODOM.pose.pose.position.y)
+    HEADING += data.pose.pose.orientation.z - LAST_ODOM.pose.pose.orientation.z
+    return 420
 
 def poseSubscriber (localisation_pos):
-    global AMCL, HEADING
+    global AMCL, HEADING, LAST_ODOM
+    LAST_ODOM = None
     print(localisation_pos)
     actual_resolution_x = localisation_pos.pose.pose.position.x/0.05
     actual_resolution_y = localisation_pos.pose.pose.position.y/0.05
@@ -40,19 +53,31 @@ def poseSubscriber (localisation_pos):
     origin_translation = [int(actual_resolution_x), int(522 - actual_resolution_y)]
 
     AMCL = origin_translation
-    HEADING = localisation_pos.pose.pose.position.z
-    print (AMCL)
+    HEADING = localisation_pos.pose.pose.orientation.z
+    print ('AMCL: ', AMCL)
+    print ('heading: ', HEADING)
 
 def destSubscriber (dest):
     global DEST, HEADING
     print(dest)
     DEST = [int(dest.data[0]), int(dest.data[1])]
-    print (DEST)
+    print ('dest: ', DEST)
 
 def getHeading (pose, dest, heading):
     yDist = dest[1] - pose[1]
     xDist = dest[0] - pose[0]
-    mapAngle = math.atan(yDist/xDist)
+    if yDist == 0:
+        if xDist >= 0:
+            print("return 0")
+            return 0
+        else:
+            print("return: ", math.pi - 0.1)
+            return math.pi - 0.1
+    mapAngle = math.atan(xDist/yDist)
+
+    print("getheading: ", pose, dest, heading)
+    print("mapAngle: ", mapAngle)
+    print('total: ', (mapAngle - HEADING))
     return mapAngle - HEADING #(????)
 
 #def detectObst():
@@ -73,6 +98,7 @@ def checkInBoundary(p1, p2):
     xDist = math.sqrt(p1[0]**2 + p2[0]**2)
     yDist = math.sqrt(p1[1]**2 + p2[0]**2)
     
+    print ("xdist: ", xDist, "yDist: ", yDist)
     return all(i<=WAYPOINT_BOUNDARY for i in [xDist, yDist])
 
 def moveBot (data):
@@ -108,7 +134,7 @@ def moveBot (data):
             midDetecting = True
 
     for (x,y) in frontRightReadings:
-        if(x<=2):
+        if(x<=y):
             frontRightDetecting = True
 
     for (x,y) in farRightReadings:
@@ -135,14 +161,15 @@ def moveBot (data):
             print("2fast2furious")
             if (not AVOIDING) or crash:
                 base_data.linear.x=0
-                if not frontLeftDetecting or not farLeftDetecting:
-                    base_data.angular.z = -0.7
-                    TURNED_LEFT = True
-                    print('turning left')
-                else:
-                    base_data.angular.z = 0.7
-                    TURNED_LEFT = False
-                    print('turning right')
+                if abs(base_data.angular.z) == 0:
+                    if not frontLeftDetecting or not farLeftDetecting:
+                        base_data.angular.z = 0.7
+                        TURNED_LEFT = True
+                        print('turning left')
+                    else:
+                        base_data.angular.z = -0.7
+                        TURNED_LEFT = False
+                        print('turning right')
                 AVOIDING = True
             else:
                 if (TURNED_LEFT and not farRightDetecting) or ((not TURNED_LEFT) and not farLeftDetecting):
@@ -160,6 +187,14 @@ def moveBot (data):
             print("off course")
             AVOIDING = False
             DIRECTIONS = rrt_star.rrt(AMCL, DEST)
+            onedDirection = []
+            for d in DIRECTIONS:
+                onedDirection.append(d[0])
+                onedDirection.append(d[1])
+            print onedDirection
+            message = Float32MultiArray()
+            message.data = onedDirection
+            routePublisher.publish(message)
             #message = Float32MultiArray()
             #message.data = DIRECTIONS
             #routePublisher.publish(message)
@@ -175,6 +210,7 @@ def moveBot (data):
                 base_data.linear.x=VELOCITY
             else:
                 base_data.angular.z=getHeading(AMCL, DEST, HEADING)
+                ON_PATH = True
 
 
         else:           #ON_PATH
@@ -185,12 +221,16 @@ def moveBot (data):
                 base_data.angular.z = 0
                 ON_PATH = FALSE
             elif checkInBoundary(AMCL, DIRECTIONS[0]):
+                print("got to checkpoint: ", DIRECTIONS[0])
                 base_data.linear.x = 0
                 DIRECTIONS.pop(0)
-            elif abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE:
+            elif not abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE:
+                print('reorientating')
                 base_data.linear.x=0
-                ON_PATH=False
+                base_data.angular.z=np.sign(getHeading(AMCL, DIRECTIONS[0], HEADING))/10
+                #ON_PATH=False
             else:
+                print ('press on')
                 base_data.angular.z=0
                 base_data.linear.x=VELOCITY
 
@@ -203,12 +243,12 @@ def moveBot (data):
 
 def talker():
     rospy.init_node('Mover', anonymous=True)
+    rospy.Subscriber('odom',Odometry, odomSubscriber)
     rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, poseSubscriber)
     print('amcl: ', AMCL)
     rospy.Subscriber('destination_pose', Float32MultiArray, destSubscriber)
     print('dest: ',  DEST)
     rospy.Subscriber('laser_reading', Float32MultiArray, moveBot)
-    #rospy.Subscriber('odom',Odometry, determineIfComplete)
     # rate = rospy.Rate(10) # 10hz
 
     rospy.spin()

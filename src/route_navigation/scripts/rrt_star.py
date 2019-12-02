@@ -215,6 +215,10 @@ def check_line(start, end):
     for x in range(start[0], end[0], inc):
         y_counter += y_step*inc
         #print("checking: ", x, start[1] + int(y_counter))
+        if x >= len(OCCUPANCY):
+            print ('hmm: ', x)
+        if start[1] + y_counter >= len(OCCUPANCY[0]):
+            print ('hmmy: ', int(start[1] + y_counter))
         if (OCCUPANCY[x][int(start[1] + y_counter)] == 1):#(checkPoint([x, int(start[1] + y_counter)])):#
             return False
 
