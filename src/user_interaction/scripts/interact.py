@@ -91,7 +91,6 @@ def waitForMessage():
     gotMessage = False
     while not gotMessage:
     	if ignoreResult:
-    		print("bruh")
     		gotMessage = True
         elif not processedSpeech == "":
             gotMessage = True
@@ -130,8 +129,11 @@ def createMsgTask(response):
         if (msgToSend is None or sender is None) or (recipient is None or urgency is None):
             waitUntilDone(response.query_result.fulfillment_text)
 
-            request = waitForMessage()
-            processedSpeech = ""
+            request = " "
+            while request != " ":
+            	request = waitForMessage()
+            	processedSpeech = ""
+
             response = sendToDialogflow(request)
 
         else:
@@ -140,8 +142,11 @@ def createMsgTask(response):
     waitUntilDone(response.query_result.fulfillment_text)
     waitUntilDone("Is this correct?")
 
-    confirmation = waitForMessage()
-    processedSpeech = ""
+    confirmation = " "
+    while confirmation != " ":
+    	confirmation = waitForMessage()
+    	processedSpeech = ""
+
     if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         waitUntilDone("Great! I'll get round to it. Thank you")
         sendTask("message",sender, recipient, msgToSend, "", urgency)
@@ -179,9 +184,10 @@ def createPkgTask(response):
         if (deliveryLoc is None or sender is None) or (recipient is None or urgency is None):
             waitUntilDone(response.query_result.fulfillment_text)
 
-            request = waitForMessage()
-            processedSpeech = ""
-            response = sendToDialogflow(request)
+            request = " "
+            while request != " ":
+            	request = waitForMessage()
+            	processedSpeech = ""
 
         else:
             taskCreated = True
@@ -189,8 +195,11 @@ def createPkgTask(response):
     waitUntilDone(response.query_result.fulfillment_text)
     waitUntilDone("Is this correct?")
 
-    confirmation = waitForMessage()
-    processedSpeech = ""
+    confirmation = " "
+    while confirmation != " ":
+    	confirmation = waitForMessage()
+    	processedSpeech = ""
+
     if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         objectsBeforePlacement = numObjects
         obNotAdded = True
@@ -234,8 +243,13 @@ def beginConversation(opener):
     else:
     	waitUntilDone(opener)
 
-    request = waitForMessage()
     processedSpeech = ""
+
+    request = " "
+    while request != " ":
+    	request = waitForMessage()
+    	processedSpeech = ""
+
     result = sendToDialogflow(request)
 
     if result.query_result.intent.display_name == "create-msg-task":
