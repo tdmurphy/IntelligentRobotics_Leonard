@@ -61,8 +61,6 @@ def detect_image():
 	_, frame = camera.read()
 	frame = increase_brightness(frame)
 	detections = detector.detectCustomObjectsFromImage(input_type='array', input_image=frame, output_image_path='./output/output.png', minimum_percentage_probability=60, thread_safe=True, custom_objects=custom)
-
-	edit_dict(detections)
 	#objects_string = filter_detections(detections)
 	objects_string=edit_dict(detections)
 	print(objects_string)
@@ -83,17 +81,17 @@ def edit_dict(detections):
 			#increase the count 
 			if(object_name in objects_dict):
 				objects_dict[object_name] = objects_dict[object_name] + 1
-			elif:
+			else:
 				objects_dict[object_name] = 1
 			
 			#times the percentage probability by a count so that those that are seen consistently are favoured 
-			percentage_prob = (percentage_prob/100) * objects_dict[object_name])
+			percentage_prob = ((percentage_prob/100) * objects_dict[object_name])
 
 			if(percentage_prob > minimum_percentage_probability):
 				objects_string += object_name + '|'
 	
 	#reset the count of objects that are not recorded 
-	for ob, count in objects_dict.items():
+	for ob, _ in objects_dict.items():
 		if not(ob in objects):
 			objects_dict[ob] = 0 		
 		
