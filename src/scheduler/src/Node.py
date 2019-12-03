@@ -59,7 +59,7 @@ def schedule(data):
 
     #print("Current Target:",scheduler.getTarget())
     pub_message_target=String()
-    pub_message_target.data=scheduler.getTarget()    
+    pub_message_target.data=scheduler.getTarget() +":True"   
 
     pub_message_backgroundTarget.data=new_task.recipient+"|"+scheduler.getTarget()
     target_background.publish(pub_message_backgroundTarget)
@@ -82,8 +82,14 @@ def recalculate(data):
 	else:
 	     scheduler.adjustWeight(task, 0)
     print("Target is now",scheduler.getTarget(), scheduler.getTask())
+    #print("Current Target is now:",scheduler.getTarget())
+    
     if oldTarget!=scheduler.getTarget():
 	print("schduler decided to update the task order")
+    else:
+        pub_message_target=String()
+    	pub_message_target.data=scheduler.getTarget()+":True"
+    	target_current.publish(pub_message_target) 
     if(person==scheduler.getTarget()):
     	activateLeonard(scheduler.getTarget())
 
@@ -106,9 +112,9 @@ def RemoveAndRecalculate(data):
 		print("Removing Task",task.taskID,"as it has been completed")
 		scheduler.removeTask(task)
     print("No of tasks left",len(scheduler.taskList))
-    pub_message =String()
-    pub_message.data = person
-    target_remove.publish(pub_message) 
+    rem_message =String()
+    rem_message.data = person
+    target_remove.publish(rem_message) 
 
     scheduler.reSchedule()
     
@@ -120,6 +126,7 @@ def RemoveAndRecalculate(data):
         destination_pose.publish(pub_message) 
         print("Current Target is now:",scheduler.getTarget())
         pub_message_target=String()
+        pub_message_target.data=scheduler.getTarget()+":True"
         target_current.publish(pub_message_target) 
 
 def listener():

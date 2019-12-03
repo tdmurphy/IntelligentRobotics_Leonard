@@ -67,11 +67,12 @@ class FacialRecogniser():
         if ((self.target != None) and (self.target in self.peoplePresent)):
             # found person! Send message back!
 	    #self.close_Screen()
+	    print("FR's target is",self.target,"And they are found in",self.peoplePresent)
 	    return True, self.target
 	for person in self.backgroundPeople:
-	    if person in self.peoplePresent:
+	    if (person in self.peoplePresent):
 	        # found background person! Send message back!
-	        #print("Found",person," in fg")
+	        print("Out of",self.peoplePresent," ",person,"is a background target out of",self.backgroundPeople)
 	        #self.close_Screen()
 	        return True, person
         for (top, right, bottom, left), name in zip(face_locations, face_names):
@@ -126,11 +127,14 @@ class FacialRecogniser():
 
             
     def removeTarget(self,person):
+        print("Removing",person,"from FR")	
         if self.target==person:
             self.target=None
             self.currentTargetUnknownOrNoTarget=True
-        elif person in self.backgroundPeople:
+	    print("The task for",person,"is complete. Can remove them as the target")
+        if (person in self.backgroundPeople):
             self.backgroundPeople.remove(person)
+	    print("The task for",person,"is complete. Can remove them from the background list")
         else:
             return
 
@@ -141,7 +145,12 @@ class FacialRecogniser():
         cv2.destroyAllWindows()
         
     def new_Screen(self):
-	print("Opening Screen",self.target)
+
+        if(self.video_capture!=None):
+		print("Closing any existing screen")		
+	    	self.close_Screen()
+
+	print("Opening Screen",self.target,self.backgroundPeople)
         self.init_people()
 	print("Before opening video")
         self.video_capture = cv2.VideoCapture(self.camera)   
