@@ -20,6 +20,7 @@ deliverPublisher = rospy.Publisher('delivered', String, queue_size=100)
 #Global for listen control - wont background listen if delivering task(s)
 delivering = False
 justDelivered = False
+ignoreResult = False
 
 #Globals for speech recognition
 listener = sr.Recognizer()
@@ -80,7 +81,7 @@ def waitUntilDone(message):
     while not done:
         if canContinue:
             done = True
-    print("done")
+    rospy.loginfo("Done speaking message: {0}".format(message))
 
 
 def waitForMessage():
@@ -89,20 +90,24 @@ def waitForMessage():
     listenPublisher.publish("listen")
     gotMessage = False
     while not gotMessage:
-        if not processedSpeech == "":
+    	if ignoreResult:
+    		gotMessage = True
+        elif not processedSpeech == "":
             gotMessage = True
-    print("Got message")
+    rospy.loginfo("Received message: {0}".format(processedSpeech))
     return processedSpeech
 
     
 def createMsgTask(response):
     global processedSpeech
 
+    originalResponse = response
+
     taskCreated = False
 
     while not taskCreated:
         parameters = MessageToDict(response.query_result.parameters)
-        print(parameters)
+        rospy.loginfo("Current task parameters: {0}".format(parameters))
         if parameters['msg-payload'] == "":
             msgToSend = None
         else:
@@ -128,7 +133,6 @@ def createMsgTask(response):
 
             request = waitForMessage()
             processedSpeech = ""
-            print(request)
             response = sendToDialogflow(request)
 
         else:
@@ -139,22 +143,23 @@ def createMsgTask(response):
 
     confirmation = waitForMessage()
     processedSpeech = ""
-    print(confirmation)
     if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         waitUntilDone("Great! I'll get round to it. Thank you")
         sendTask("message",sender, recipient, msgToSend, "", urgency)
     else:
         waitUntilDone("I must have misunderstood something, lets start again.")
-        listenForCommand()
+        createMsgTask(originalResponse)
 
 
 def createPkgTask(response):
     global processedSpeech
     taskCreated = False
 
+    originalResponse = response
+
     while not taskCreated:
         parameters = MessageToDict(response.query_result.parameters)
-        print(parameters)
+        rospy.loginfo("Current task parameters: {0}".format(parameters))
         if parameters['delivery-location'] == "":
             deliveryLoc = None
         else:
@@ -180,7 +185,6 @@ def createPkgTask(response):
 
             request = waitForMessage()
             processedSpeech = ""
-            print(request)
             response = sendToDialogflow(request)
 
         else:
@@ -191,13 +195,12 @@ def createPkgTask(response):
 
     confirmation = waitForMessage()
     processedSpeech = ""
-    print(confirmation)
     if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         objectsBeforePlacement = numObjects
         obNotAdded = True
         waitUntilDone("Great! Please give me the item you want to deliver")
         while obNotAdded:
-            if objectsBeforePlacement != numObjects:
+            if objectsBeforePlacement < numObjects:
                 obNotAdded = False
 
         print("object added")
@@ -206,11 +209,11 @@ def createPkgTask(response):
         sendTask("package", sender, recipient, "", deliveryLoc, urgency)
     else:
         waitUntilDone("I must have misunderstood something, lets start again.")
-        listenForCommand()
+        createPkgTask(originalResponse)
 
 
 def listenForCommand():
-    global processedSpeech
+    global processedSpeech, justDelivered, ignoreResult
 
     if not delivering and not justDelivered:
 
@@ -221,10 +224,12 @@ def listenForCommand():
         	beginConversation("Hello")
     elif justDelivered:
     	beginConversation("Thats's everything I have for you, is there anything else I can do?")
+    	justDelivered = False
+    	ignoreResult = False
 
 
 def beginConversation(opener):
-    global processedSpeech, justDelivered
+    global processedSpeech
 
     stopPublisher.publish("stop")
     
@@ -233,7 +238,6 @@ def beginConversation(opener):
     	waitUntilDone(response.query_result.fulfillment_text)
     else:
     	waitUntilDone(opener)
-    	justDelivered = False
 
     request = waitForMessage()
     processedSpeech = ""
@@ -249,9 +253,10 @@ def beginConversation(opener):
 
 
 def deliverTask(data):
-	global delivering, justDelivered
+	global delivering, justDelivered, ignoreResult
 	delivering = True
-	print(data.data)
+	ignoreResult = True
+	loginfo("Received tasks to deliver: {0}".format(data.data))
 
 	tasks = data.data.split("#")
 	tasksToDeliver = []
@@ -276,7 +281,7 @@ def deliverTask(data):
 			obTaken = False
 			waitUntilDone("I have a package from {0} for you, please take it".format(taskInfo[1]))
 			while not obTaken:
-				if objectsBeforeCollect != numObjects:
+				if objectsBeforeCollect > numObjects:
 					obTaken = True
 					print("object taken")
 	delivering = False

@@ -21,7 +21,7 @@ def processAudio():
 			listener.adjust_for_ambient_noise(source, duration=1)
 			print('\a')
 			rospy.loginfo("Node is listening")
-			audio = listener.listen(source)
+			audio = listener.listen(source, timeout=5)
 			rospy.loginfo("Captured audio. Processing...")
 			print('\a')
 		try:
