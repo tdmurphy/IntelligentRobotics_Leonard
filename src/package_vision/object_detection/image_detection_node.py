@@ -12,6 +12,7 @@ camera = cv2.VideoCapture(5)
 
 minimum_percentage_probability = 60
 min_low_probability = 8
+count_weight = 0.2
 
 def show_frame(camera):
 	if(not camera.isOpened()):
@@ -69,33 +70,36 @@ def detect_image():
 
 
 def edit_dict(detections):
+	
 	global objects_dict
 	objects_string = ""
 	objects = []
 	for d in detections: 
-		percentage_prob = d['percentage_probability']
+		percentage_prob = d['percentage_probability'] 
+		object_name = d['name']
+		print('percentage prob before: %f' % percentage_prob)
 		if(percentage_prob >= min_low_probability):
-			object_name = d['name']
 			objects += object_name
 
 			#increase the count 
-			if(object_name in objects_dict):
+			if(object_name in objects_dict.keys()):
 				objects_dict[object_name] = objects_dict[object_name] + 1
 			else:
 				objects_dict[object_name] = 1
 			
 			#times the percentage probability by a count so that those that are seen consistently are favoured 
-			percentage_prob = ((percentage_prob/100) * objects_dict[object_name])
+			percentage_prob = (percentage_prob +  (percentage_prob * objects_dict[object_name] * count_weight))
 
 			if(percentage_prob > minimum_percentage_probability):
 				objects_string += object_name + '|'
 	
+		print('percentage prob after: %f' % percentage_prob)
 	#reset the count of objects that are not recorded 
 	for ob, _ in objects_dict.items():
 		if not(ob in objects):
 			objects_dict[ob] = 0 		
 		
-	return objects_string	
+	return objects_string		
 
 def filter_detections(detections):
 	objects_string = ""
