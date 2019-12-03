@@ -25,9 +25,11 @@ AVOIDING = False
 AMCL = None
 DEST = None
 TURNED_LEFT = False
-HEADING = 0
+HEADING = None
 LAST_ODOM = None
+LAST_AMCL = None
 TRUEPOSE = None
+LAST_HEADING = None
 
 routePublisher = rospy.Publisher('/route_nodes', Float32MultiArray, queue_size=100)
 
@@ -45,22 +47,27 @@ def getHeading2(q):
     return yaw
 
 def odomSubscriber (data):
-    global LAST_ODOM, HEADING, AMCL
+    global LAST_ODOM, HEADING, AMCL, LAST_AMCL
     if LAST_ODOM == None:
         LAST_ODOM = data
         return 69
+    if LAST_HEADING == None or LAST_AMCL == None:
+        print "heading none"
+        return 69
     
-    AMCL[0] += int(data.pose.pose.position.x - LAST_ODOM.pose.pose.position.x)
-    AMCL[1] += int(data.pose.pose.position.y - LAST_ODOM.pose.pose.position.y)
-    HEADING += data.pose.pose.orientation.z - LAST_ODOM.pose.pose.orientation.z
+    AMCL[0] = int(LAST_AMCL[0] + data.pose.pose.position.x - LAST_ODOM.pose.pose.position.x)
+    AMCL[1] = int(LAST_AMCL[1] + data.pose.pose.position.y - LAST_ODOM.pose.pose.position.y)
+    HEADING = LAST_HEADING + (getHeading2(data.pose.pose.orientation) - getHeading2(LAST_ODOM.pose.pose.orientation))
+    print(getHeading2(data.pose.pose.orientation), getHeading2(LAST_ODOM.pose.pose.orientation))
+    print("LAST HEADING: ", LAST_HEADING, "HEADING: ", HEADING)
     return 420
 
 def poseSubscriber (localisation_pos):
-    global AMCL, HEADING, LAST_ODOM, TRUEPOSE
+    global AMCL, HEADING, LAST_ODOM, TRUEPOSE, LAST_AMCL, LAST_HEADING
     LAST_ODOM = None
     print(localisation_pos)
-    actual_resolution_x = localisation_pos.pose.pose.position.x*(605./662.)*10
-    actual_resolution_y = localisation_pos.pose.pose.position.y*(528./639.)*10
+    actual_resolution_x = localisation_pos.pose.pose.position.x*(605./33.1)
+    actual_resolution_y = localisation_pos.pose.pose.position.y*(528./31.95)
 
     print("actual x ",actual_resolution_x)
     print("actual y",actual_resolution_y)
@@ -69,9 +76,11 @@ def poseSubscriber (localisation_pos):
 
     TRUEPOSE = [localisation_pos.pose.pose.position.x, localisation_pos.pose.pose.position.y]
     AMCL = origin_translation
+    LAST_AMCL = origin_translation
     HEADING = getHeading2(localisation_pos.pose.pose.orientation)
+    LAST_HEADING = getHeading2(localisation_pos.pose.pose.orientation)
     print ('original amcl: ', [localisation_pos.pose.pose.position.x, localisation_pos.pose.pose.position.y],'AMCL: ', AMCL)
-    print ('heading: ', HEADING)
+    print ('heading: ', HEADING, LAST_HEADING)
 
 def destSubscriber (dest):
     global DEST, HEADING
@@ -83,19 +92,35 @@ def getHeading (pose, dest, heading):
     yDist = dest[1] - pose[1]
     xDist = dest[0] - pose[0]
     if yDist == 0:
-        if xDist >= 0:
+        if xDist == 0:
             print("return 0")
             return 0
         else:
             print("return: ", math.pi - 0.1)
             return math.pi - 0.1
-    mapAngle = math.atan(xDist/yDist)
+    #mapAngle = math.atan(xDist/yDist)
+    mapAngle = math.atan2(yDist,xDist)
+    if xDist < 0 and yDist < 0:
+        mapAngle += math.pi
+    elif xDist < 0 and yDist > 0:
+        mapAngle -= math.pi
+
+    print abs(mapAngle)
+
+    if abs(mapAngle) > math.pi:
+        print("unmod mapAngle", mapAngle)
+        mapAngle = mapAngle % (math.pi)
 
     print("getheading: ", pose, dest, heading)
     print("original coords: ", TRUEPOSE)
     print("mapAngle: ", mapAngle)
-    print('total: ', (mapAngle - HEADING))
-    return mapAngle - HEADING #(????)
+    total = mapAngle - HEADING
+
+    if abs(total) > math.pi:
+        print("unmod total", total)
+        total = (total % 2*(math.pi))-math.pi
+    print('total: ', total)
+    return total #(????)
 
 #def detectObst():
     #need all forward detection metrics
@@ -112,14 +137,13 @@ def getHeading (pose, dest, heading):
     #veer back towards original trajectory
 
 def checkInBoundary(p1, p2):
-    xDist = math.sqrt(p1[0]**2 + p2[0]**2)
-    yDist = math.sqrt(p1[1]**2 + p2[0]**2)
+    dist = math.sqrt((p2[1] - p1[1])**2 + (p2[0] - p1[0])**2)
     
-    print ("xdist: ", xDist, "yDist: ", yDist)
-    return all(i<=WAYPOINT_BOUNDARY for i in [xDist, yDist])
+    print("dist: ", dist)
+    return dist<=WAYPOINT_BOUNDARY
 
 def moveBot (data):
-    global AVOIDING, ON_PATH, DIRECTIONS, TURNED_LEFT 
+    global AVOIDING, ON_PATH, DIRECTIONS, TURNED_LEFT, MOVE
 
     thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
@@ -139,7 +163,7 @@ def moveBot (data):
     frontRightCrash = False
 
     for (x,y) in farLeftReadings:
-        if(x<=y):
+        if(x<=0.4):
             farLeftDetecting = True
 
     for (x,y) in frontLeftReadings:
@@ -155,16 +179,14 @@ def moveBot (data):
             frontRightDetecting = True
 
     for (x,y) in farRightReadings:
-        if(x<=y):
+        if(x<=0.4):
             farRightDetecting = True
 
     crash = frontLeftDetecting or midDetecting or frontRightDetecting
 
 
     if len(DIRECTIONS) == 0 and (not (DEST == None)):
-        print(":(")
         DIRECTIONS = rrt_star.rrt(AMCL, DEST)
-        print("whyyyy")
         onedDirection = []
         for d in DIRECTIONS:
             onedDirection.append(d[0])
@@ -174,9 +196,15 @@ def moveBot (data):
         message.data = onedDirection
         routePublisher.publish(message)
 
+    crash = False
+    ON_PATH = True
+
 
     if MOVE and (not (AMCL == None)) and (not (DEST == None)):
         print ("i'm moving yo")
+
+        print('Distance: ', math.sqrt((AMCL[0]-DIRECTIONS[0][0])**2+(AMCL[1]-DIRECTIONS[0][1])**2))
+
         print('DIRECTIONS: ', DIRECTIONS)
         if crash or AVOIDING:
             print("2fast2furious")
@@ -184,11 +212,11 @@ def moveBot (data):
                 base_data.linear.x=0
                 if abs(base_data.angular.z) == 0:
                     if not frontLeftDetecting or not farLeftDetecting:
-                        base_data.angular.z = 0.7
+                        base_data.angular.z = 0.6
                         TURNED_LEFT = True
                         print('turning left')
                     else:
-                        base_data.angular.z = -0.7
+                        base_data.angular.z = -0.6
                         TURNED_LEFT = False
                         print('turning right')
                 AVOIDING = True
@@ -225,7 +253,7 @@ def moveBot (data):
                 base_data.angular.z = 0
                 base_data.linear.x = 0
                 #notify someone i guess
-            elif abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE:
+            elif abs(getHeading(AMCL, [DIRECTIONS[0][0], 528-DIRECTIONS[0][1]], HEADING)) <= HEADING_TOLERANCE:
                 ON_PATH = True
                 base_data.angular.z=0
                 base_data.linear.x=VELOCITY
@@ -245,13 +273,20 @@ def moveBot (data):
                 print("got to checkpoint: ", DIRECTIONS[0])
                 base_data.linear.x = 0
                 DIRECTIONS.pop(0)
+            elif checkInBoundary(AMCL, DEST):
+                MOVE = False
             elif not abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE:
                 print('reorientating')
-                #base_data.linear.x=0
-                base_data.angular.z=np.sign(getHeading(AMCL, DIRECTIONS[0], HEADING))/10
+                base_data.linear.x=0
+                base_data.angular.z=np.sign(getHeading(AMCL, DIRECTIONS[0], HEADING))/3
                 #ON_PATH=False
             else:
                 print ('press on')
+                #if farLeftDetecting:
+                #    base_data.angular.z=-0.7
+                #elif farRightDetecting:
+                #    base_data.angular.z=0.7
+                #else:
                 base_data.angular.z=0
                 base_data.linear.x=VELOCITY
 
