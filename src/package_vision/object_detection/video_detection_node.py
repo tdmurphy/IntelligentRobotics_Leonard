@@ -1,6 +1,6 @@
 
 from imageai.Detection.Custom import CustomObjectDetection
-from imageai.Detection import ObjectDetection
+from imageai.Detection import ObjectDetection, VideoObjectDetection
 import os
 import cv2
 from matplotlib import pyplot as plt
@@ -47,6 +47,11 @@ detector.setModelTypeAsRetinaNet()
 detector.setModelPath(model_path)
 detector.loadModel(detection_speed='fast') 
 
+video_detector = VideoObjectDetection()
+video_detector.setModelTypeAsRetinaNet()
+video_detector.setModelPath(model_path)
+video_detector.loadModel()
+
 objects_dict = {}
 
 pub_str = rospy.Publisher('objects_detected', String, queue_size=100)
@@ -67,12 +72,18 @@ def detect_image():
 	print(objects_string)
 	pub_str.publish(objects_string)
 
-def edit_dict(detections):
+def detectVideo(detector):
+	print("detecting video...") 
+	video_detector.detectCustomObjectsFromVideo(output_file_path="./output/camera_video_detected", 
+    camera_input=camera, frames_per_second=10, log_progress=True, minimum_percentage_probability=40, 
+    per_frame_function=objectsInFrame, save_detected_video=False, custom_objects=custom, return_detected_frame=False)
+
+def edit_dict(frame_number, output_array, output_count):
 	global objects_dict
 	print(objects_dict)
 	objects_string = ""
 	objects = []
-	for d in detections: 
+	for d in output_array: 
 		percentage_prob = d['percentage_probability'] 
 		object_name = d['name']
 		#print('percentage prob before: %f' % percentage_prob)
