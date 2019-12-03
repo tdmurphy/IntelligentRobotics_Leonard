@@ -101,8 +101,6 @@ def waitForMessage():
 def createMsgTask(response):
     global processedSpeech
 
-    originalResponse = response
-
     taskCreated = False
 
     while not taskCreated:
@@ -147,15 +145,12 @@ def createMsgTask(response):
         waitUntilDone("Great! I'll get round to it. Thank you")
         sendTask("message",sender, recipient, msgToSend, "", urgency)
     else:
-        waitUntilDone("I must have misunderstood something, lets start again.")
-        createMsgTask(originalResponse)
+        beginConversation("I must have misunderstood something, lets start again. What can I do for you?")
 
 
 def createPkgTask(response):
     global processedSpeech
     taskCreated = False
-
-    originalResponse = response
 
     while not taskCreated:
         parameters = MessageToDict(response.query_result.parameters)
@@ -208,8 +203,7 @@ def createPkgTask(response):
 
         sendTask("package", sender, recipient, "", deliveryLoc, urgency)
     else:
-        waitUntilDone("I must have misunderstood something, lets start again.")
-        createPkgTask(originalResponse)
+        beginConversation("I must have misunderstood something, lets start again. What can I do for you?")
 
 
 def listenForCommand():
