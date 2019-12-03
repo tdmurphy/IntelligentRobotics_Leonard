@@ -1,5 +1,5 @@
 # !/usr/bin/env python
-import sys 
+import sys, os 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog
 from PyQt5.uic import loadUi
@@ -15,6 +15,7 @@ from sklearn.neighbors import KDTree
 from numpy import random,argsort,sqrt
 from pylab import plot,show
 import array as arr
+import rrt_star
 
 # def knn_search(x, D, K):
 #  """ find K nearest neighbours of data among D """
@@ -25,6 +26,11 @@ import array as arr
 #  idx = argsort(sqd) # sorting
 #  # return the indexes of K nearest neighbours
 #  return idx[:K]
+
+DIRNAME = os.path.dirname(__file__)
+print(DIRNAME, __file__)
+UIPATH  = os.path.join(DIRNAME, '../ui/')
+CLEAN_MAP_UPDATED = os.path.join(UIPATH, 'clean_map_updated.png')
 
 class Node:
     prevNode = None
@@ -137,7 +143,7 @@ def simplify_image(image_path):
 
 
 	#now we rewrite the image to new black and white comprising of only two rgb values
-	picture.save("clean_map_simple.png")
+	picture.save(os.path.join(UIPATH, "clean_map_simple.png"))
 
 
 def occupancy_grid(image_path):
@@ -195,16 +201,16 @@ class ranfdom(QDialog):
 
 	START_POINT = [0,0]
 	DEST_POINT = [0,0]
-        OCCUPANCY = occupancy_grid('clean_map_updated.png')
+        OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_updated.png'))
         NODES = []
         TREE = {}
 	
 
 	def __init__(self):
 		super(ranfdom,self).__init__()
-		loadUi('ranfdom.ui', self)
+		loadUi(os.path.join(UIPATH, 'ranfdom.ui'), self)
 		self.setWindowTitle('ranfdom PyQt5 Gui')
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+                self.label.setPixmap(QPixmap(CLEAN_MAP_UPDATED))
 		self.label.mousePressEvent = self.getPos
 		self.pushButton.clicked.connect(self.call_RRT)#self.print_ham)#RRT)
 		
@@ -259,7 +265,9 @@ class ranfdom(QDialog):
             for x in range(start[0], end[0], inc):
                 y_counter += y_step*inc
                 if(draw):
-                    self.draw_points([[x, int(start[1] + y_counter)]], 10, 'clean_map_updated.png', 'clean_map_updated.png')
+                    self.draw_points([[x, int(start[1] + y_counter)]], 10, CLEAN_MAP_UPDATED, CLEAN_MAP_UPDATED)
+                #else:
+                   #self.draw_points([[x, int(start[1] + y_counter)]], 50, 'clean_map_updated.png', 'clean_map_updated.png')
                 print("checking: ", x, start[1] + int(y_counter))
                 if (self.OCCUPANCY[x][int(start[1] + y_counter)] == 1):
                     return False
@@ -273,7 +281,7 @@ class ranfdom(QDialog):
                     self.NODES.append(self.start_clicked_point)
                     self.TREE[tuple(self.start_clicked_point)] = Node(None, self.start_clicked_point)
 		print("START POINT clicked  ___",self.start_clicked_point)
-		self.RRT(self.start_clicked_point, 'clean_map_updated.png')#init_node)
+		self.RRT(self.start_clicked_point, CLEAN_MAP_UPDATED)#init_node)
 
 	all_nodes = []
 	def RRT(self,initial_point, image_path):
@@ -383,10 +391,10 @@ class ranfdom(QDialog):
 		
 		rand_point_visible = self.generate_point(environment_rand_point, point_size)
 		# print(len(rand_point_visible))
-		self.draw_points(rand_point_visible, node_color, 'clean_map_updated.png', 'clean_map_updated.png')
+		self.draw_points(rand_point_visible, node_color, CLEAN_MAP_UPDATED, CLEAN_MAP_UPDATED)
 
 		# #render
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.label.setPixmap(QPixmap(CLEAN_MAP_UPDATED))
 
 	def getPos(self , event):
 		#create a point set, which gets added to image.
@@ -418,8 +426,8 @@ class ranfdom(QDialog):
 			self.append_points(goal_posts, self.DEST_POINT)
 			print("destination")
 
-		self.draw_points(goal_posts,100,"clean_map_simple.png", "clean_map_updated.png")
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.draw_points(goal_posts,100, os.path.join(UIPATH, "clean_map_simple.png"), CLEAN_MAP_UPDATED)
+		self.label.setPixmap(QPixmap(CLEAN_MAP_UPDATED))
 
 		
 
