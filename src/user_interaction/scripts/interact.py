@@ -91,6 +91,7 @@ def waitForMessage():
     gotMessage = False
     while not gotMessage:
     	if ignoreResult:
+    		print("bruh")
     		gotMessage = True
         elif not processedSpeech == "":
             gotMessage = True
@@ -217,9 +218,9 @@ def listenForCommand():
     	if "leonard" in text.lower():
         	beginConversation("Hello")
     elif justDelivered:
-    	beginConversation("Thats's everything I have for you, is there anything else I can do?")
     	justDelivered = False
     	ignoreResult = False
+    	beginConversation("Thats's everything I have for you, is there anything else I can do?")
 
 
 def beginConversation(opener):
@@ -250,7 +251,7 @@ def deliverTask(data):
 	global delivering, justDelivered, ignoreResult
 	delivering = True
 	ignoreResult = True
-	loginfo("Received tasks to deliver: {0}".format(data.data))
+	rospy.loginfo("Received tasks to deliver: {0}".format(data.data))
 
 	tasks = data.data.split("#")
 	tasksToDeliver = []

@@ -22,7 +22,7 @@ def processAudio():
 				listener.adjust_for_ambient_noise(source, duration=1)
 				print('\a')
 				rospy.loginfo("Node is listening")
-				audio = listener.listen(source, timeout=5)
+				audio = listener.record(source, duration=5)
 				rospy.loginfo("Captured audio. Processing...")
 				print('\a')
 				text = listener.recognize_google(audio)
@@ -31,8 +31,10 @@ def processAudio():
 				shouldListen = False
 			except sr.WaitTimeoutError:
 				rospy.loginfo("Listen time exceeded...")
+				processedAudio.publish("")
 			except sr.UnknownValueError:
 				rospy.loginfo("Empty text - Could not recognise utterance")
+				processedAudio.publish("")
 			except sr.RequestError as e:
 				rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
 
