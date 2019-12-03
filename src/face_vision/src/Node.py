@@ -8,7 +8,7 @@ found_person = rospy.Publisher('found_person',String,queue_size=100)
 fg= FacialRecogniser()
 backgroundPeopletoAdd=[]
 currentTarget=None
-okayToContinue=False
+okayToContinue=True
 
 def destroyScreen():
 	global fg
@@ -60,11 +60,14 @@ def backgroundRecognise(data):
 def recognise(data):    
     global fg
     global backgroundPeopletoAdd
-    global currentTarget
+    global currentTarget    
 
     destroyScreen()
-    person=data.data
+    person=data.data.split(":")[0]
+    okayToContinue=data.data.split(":")[1]
     #target=None
+    while (not okayToContinue):	
+	pass
     print("RECOGNISE: Scheduler told me to find",person)    
 
     if ((currentTarget!=None) and (currentTarget!=person)):
@@ -75,37 +78,17 @@ def recognise(data):
     if person in backgroundPeopletoAdd:	
 	backgroundPeopletoAdd.remove(person)
 	print("Finding",person," was a background task. Promoting to current. BG Tasks are atm",backgroundPeopletoAdd)
-
-    #for bp in backgroundPeopletoAdd:
-	#fg.backgroundPeople.append(bp)
-
-    #fg.setCurrentTarget(person)   
-    #print("1")     
- 	
-    while((currentTarget != None)or(len(backgroundPeopletoAdd)>0)): 
+    print("Check for opening screen",currentTarget,len(backgroundPeopletoAdd)) 	
+    if((currentTarget != None)or(len(backgroundPeopletoAdd)>0)): 
 	found= handleScreen(currentTarget,backgroundPeopletoAdd) 
-	#print("2, opening from node, current")
-    	#target=fg.new_Screen()
-	#print("new screen returns",target)
-	#print("3")
     	if(found==person):
     		print("Oh nice, I found the current Target.",found)
-		#fg.removeTarget(target)			
-		#print("Removed",target,"from people to find",fg.target,fg.backgroundPeople)
-		#pub_message = String()
-    		#pub_message.data = target
-    		#found_person.publish(pub_message) 	
-    	else:   #not always sees a background target so don't publish
+    	elif(found in fg.backgroundPeople):   #not always sees a background target so don't publish
 		print("Oh, so I found a background target?",found)
 	pub_message = String()
     	pub_message.data = found
     	found_person.publish(pub_message)
-        while(not okayToContinue):
-		pass
-	print("Been given permission to continue looking")
-		#fg.removeTarget(target)	
-		#print("Removed",target,"from people to find",fg.target,fg.backgroundPeople)			
-		#target=None  
+        okayToContinue=False
 
 def CarryOn(data):
 	global okayToContinue
@@ -116,12 +99,12 @@ def stopSearch(data):
     global backgroundPeopletoAdd 
     global currentTarget   
     global fg
+    fg.removeTarget(data.data)
     if data.data in backgroundPeopletoAdd:
-	backgroundPeopletoAdd.remove(data.data)
-        fg.removeTarget(data.data)
+	backgroundPeopletoAdd.remove(data.data)        
     if(currentTarget==data.data):	
         currentTarget=None
-    handleScreen(currentTarget,backgroundPeopletoAdd)
+    #handleScreen(currentTarget,backgroundPeopletoAdd)
 
 def listener():
     print("Listening")    
