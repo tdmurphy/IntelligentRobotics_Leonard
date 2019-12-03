@@ -68,24 +68,33 @@ def detect_image():
 	pub_str.publish(objects_string)
 
 
+
 def edit_dict(detections):
 	global objects_dict
 	objects_string = ""
+	objects = []
 	for d in detections: 
-		if(d['percentage_probability'] > minimum_percentage_probability):
-			objects_dict[d['name']] = 10
-			
-		elif(d['percentage_probability'] > 5):
-			if(d['name'] in objects_dict):
-				objects_dict[d['name']] = objects_dict[d['name']] + 1
-			else:
-				objects_dict[d['name']] = 1
-		else:
-			if(d['name'] in objects_dict):
-				objects_dict[d['name']] = 0 
+		percentage_prob = d['percentage_probability']
+		object_name = d['name']
+		objects += object_name
+
+		#increase the count 
+		if(object_name in objects_dict):
+			objects_dict[object_name] = objects_dict[object_name] + 1
+		elif:
+			objects_dict[object_name] = 1
+		
+		#times the percentage probability by a count so that those that are seen consistently are favoured 
+		percentage_prob = percentage_prob * objects_dict[object_name])
+
+		if(percentage_prob > minimum_percentage_probability):
+			objects_string += object_name + '|'
+	
+	#reset the count of objects that are not recorded 
 	for ob, count in objects_dict.items():
-		if count > 3:
-			objects_string += str(ob) + '|'		
+		if not(ob in objects):
+			objects_dict[ob] = 0 		
+		
 	return objects_string	
 
 def filter_detections(detections):
