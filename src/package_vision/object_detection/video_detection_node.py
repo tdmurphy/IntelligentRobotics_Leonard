@@ -8,7 +8,7 @@ import rospy
 from std_msgs.msg import Bool, String
 
 execution_path = os.getcwd()
-camera = cv2.VideoCapture(5)
+camera = cv2.VideoCapture(4)
 
 minimum_percentage_probability = 60
 min_low_probability = 8
@@ -72,11 +72,11 @@ def detect_image():
 	print(objects_string)
 	pub_str.publish(objects_string)
 
-def detectVideo(detector):
+def detectVideo():
 	print("detecting video...") 
 	video_detector.detectCustomObjectsFromVideo(output_file_path="./output/camera_video_detected", 
     camera_input=camera, frames_per_second=10, log_progress=True, minimum_percentage_probability=40, 
-    per_frame_function=objectsInFrame, save_detected_video=False, custom_objects=custom, return_detected_frame=False)
+    per_frame_function=edit_dict, save_detected_video=False, custom_objects=custom, return_detected_frame=False)
 
 def edit_dict(frame_number, output_array, output_count):
 	global objects_dict
@@ -108,7 +108,7 @@ def edit_dict(frame_number, output_array, output_count):
 	print(objects)
 	for ob, _ in objects_dict.items():
 		if not(ob in objects):
-			objects_dict[ob] = 0 		
+			objects_dict[ob] = max(0, objects_dict[ob] - 1) 		
 		
 	return objects_string		
 
@@ -129,7 +129,7 @@ def increase_brightness(frame):
 
 def talker():
         rospy.init_node('Detector', anonymous=True)
-        detect_image()
+        detectVideo()
 
 if __name__ == '__main__':
 	show_frame(camera)
