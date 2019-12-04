@@ -24,7 +24,7 @@ def occupancy_grid(image_path):
 	for x in range (width):
    		for y in range (height):
    			current_color = picture.getpixel( (x,y) )
-   			print("current color upd ", current_color)
+   			#print("current color upd ", current_color)
    			if current_color == (254, 254, 254):
    				print("x,y ", x, "  ", y)
    				Matrix[x][height-1 - y] = 0
@@ -35,14 +35,14 @@ def occupancy_grid(image_path):
    			else:
    				#print("x,y ", x, "  ", y)
    				Matrix[x][height-1 - y] = 1
-                                print()
+                                #print()
    				#print("oc ", Matrix[x][y])
    				#print("width,", width," ")
    				#print("height",height, " ")
 
 	return (Matrix)
 
-OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_simple2.png'))
+OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_simple.png'))
 
 class Node:
     prevNode = None

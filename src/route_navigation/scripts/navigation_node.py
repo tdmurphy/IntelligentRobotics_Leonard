@@ -189,7 +189,7 @@ def simplify_image(image_path):
 
 
 	#now we rewrite the image to new black and white comprising of only two rgb values
-	picture.save("clean_map_simple.png")
+	picture.save("/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_simple.png")
 
 
 def occupancy_grid(image_path):
@@ -246,16 +246,16 @@ class ranfdom(QDialog):
 	global Node
 	START_POINT = [0,0]
 	DEST_POINT = [0,0]
-	OCCUPANCY = occupancy_grid('clean_map_updated.png')
+	OCCUPANCY = occupancy_grid('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png')
 	NODES = []
 	TREE = {}
 	
 
 	def __init__(self):
 		super(ranfdom,self).__init__()
-		loadUi('ranfdom.ui', self)
+		loadUi('/data/private/robot/catkin_ws/src/route_navigation/ui/ranfdom.ui', self)
 		self.setWindowTitle('ranfdom PyQt5 Gui')
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
 		self.label.mousePressEvent = self.getPos
 		self.pushButton.clicked.connect(self.call_RRT)#self.print_ham)#RRT)
 		
@@ -281,21 +281,29 @@ class ranfdom(QDialog):
 				x = int(x)
 				y=int(y)
 				multilist.append([x,y])
-			if count == 1:
-				count = 0
+				
 
 			if count == 0:
+				count = 2
+
+			if count == 1:
+				count = 0
+			if count == 2:
 				count = 1
+				
 	
 		return multilist
 
 
 	def render(self,data):
-		
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
 		print("in")
 		print(data.data)
 		x = []
 		x = self.translate_from(data.data)
+
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
+
 		print(x)
 		#self.draw_points(self.translate_from(data)
 		pointset =[]
@@ -304,8 +312,12 @@ class ranfdom(QDialog):
 			self.append_points(pointset,points2add)
 
 
-		self.draw_points(pointset, 50, 'clean_map_simple.png', 'clean_map_updated.png')
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.draw_points(pointset, 50, '/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_simple.png', '/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png')
+		 
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
+		self.show()
+		
+		
 	
 	def destination_subscriber(self):
 		
@@ -316,6 +328,7 @@ class ranfdom(QDialog):
 		rospy.Subscriber("route_nodes", Float32MultiArray, self.render)
     		# rate = rospy.Rate(10) # 10hz
     		rospy.spin()
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
 
 	def append_points(self,point_set, points_to_add):
 
@@ -345,7 +358,7 @@ class ranfdom(QDialog):
 		return point_g
 
 	def draw_points(self,point_set, color, input_image, output_image):
-		print("point set ", point_set)
+		#print("point set ", point_set)
 		picture = Image.open(input_image)
 		for i in range(len(point_set)):
 			
@@ -366,7 +379,7 @@ class ranfdom(QDialog):
 		for x in range(start[0], end[0], inc):
 			y_counter += y_step*inc
 			if(draw):
-				self.draw_points([[x, int(start[1] + y_counter)]], 10, 'clean_map_updated.png', 'clean_map_updated.png')
+				self.draw_points([[x, int(start[1] + y_counter)]], 10, '/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png', '/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png')
 				print("checking: ", x, start[1] + int(y_counter))
 			if (self.OCCUPANCY[x][int(start[1] + y_counter)] == 1):
 				return False
@@ -376,6 +389,7 @@ class ranfdom(QDialog):
 
 	def call_RRT(self , event):
 		init_node = []
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
 		self.destination_subscriber()
 		# if len(self.NODES)==0:
 		# 	self.NODES.append(self.start_clicked_point)
@@ -495,7 +509,7 @@ class ranfdom(QDialog):
 		self.draw_points(rand_point_visible, node_color, 'clean_map_updated.png', 'clean_map_updated.png')
 
 		# #render
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
 
 	def getPos(self , event):
 		#create a point set, which gets added to image.
@@ -527,8 +541,8 @@ class ranfdom(QDialog):
 			self.append_points(goal_posts, self.DEST_POINT)
 			print("destination")
 
-		self.draw_points(goal_posts,100,"clean_map_simple.png", "clean_map_updated.png")
-		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.draw_points(goal_posts,100,"/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_simple.png", "/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png")
+		self.label.setPixmap(QPixmap('/data/private/robot/catkin_ws/src/route_navigation/scripts/clean_map_updated.png'))
 
 
 
