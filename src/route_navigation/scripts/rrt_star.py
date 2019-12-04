@@ -27,14 +27,14 @@ def occupancy_grid(image_path):
    			print("current color upd ", current_color)
    			if current_color == (254, 254, 254):
    				print("x,y ", x, "  ", y)
-   				Matrix[x][y] = 0
+   				Matrix[x][height-1 - y] = 0
    				#print("unoc ", Matrix[x][y])
    				#print("width,", width," ")
    				#print("height",height, " ")
 
    			else:
    				#print("x,y ", x, "  ", y)
-   				Matrix[x][y] = 1
+   				Matrix[x][height-1 - y] = 1
                                 print()
    				#print("oc ", Matrix[x][y])
    				#print("width,", width," ")
