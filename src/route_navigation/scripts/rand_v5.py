@@ -28,7 +28,7 @@ import rrt_star
 #  return idx[:K]
 
 DIRNAME = os.path.dirname(__file__)
-print(DIRNAME, __file__)
+#print(DIRNAME, __file__)
 UIPATH  = os.path.join(DIRNAME, '../ui/')
 CLEAN_MAP_UPDATED = os.path.join(UIPATH, 'clean_map_updated.png')
 
@@ -61,17 +61,17 @@ def draw_line_between_points(point1, point2):
 		x_1 = point1[1]
 		x_2 = point2[1]
 
-	print("x1y1: ",x_1,y_1, " x2y2 ", x_2, y_2 )
+	#print("x1y1: ",x_1,y_1, " x2y2 ", x_2, y_2 )
 
 	#find y = mx +c
 	#solve for m 
 	#if((x_2 - x_1) ** add div zero edge case
 	m = (y_2 - y_1)/(x_2 - x_1)
-	print("m", m)
+	#print("m", m)
 
 	# solve for c
 	c = y_1 - (m*x_1)
-	print("c", c)
+	#print("c", c)
 
 	all_pixals_on_line = []
 
@@ -95,18 +95,18 @@ def draw_line_between_points(point1, point2):
 
 		for y in range(y_2, (y_1+1)):
 			x = (y - c)/m
-			print("y",y)
+			#print("y",y)
 			y = int(y)
 			x = int(x)
-			print("x ", x)
+			#print("x ", x)
 			all_pixals_on_line.append([x, y])
 	else:
 		for y in range(y_1, (y_2+1)):
 			x = (y - c)/m
-			print("y",y)
+			#print("y",y)
 			y = int(y)
 			x = int(x)
-			print("x ", x)
+			#print("x ", x)
 			all_pixals_on_line.append([x, y])
 
 	#add yrange
@@ -160,7 +160,7 @@ def occupancy_grid(image_path):
 	for x in range (width):
    		for y in range (height):
    			current_color = picture.getpixel( (x,y) )
-   			print("current color upd ", current_color)
+   			#print("current color upd ", current_color)
    			if current_color == 254:
    				#print("x,y ", x, "  ", y)
    				Matrix[x][y] = 0
@@ -180,7 +180,7 @@ def occupancy_grid(image_path):
 
 def generate_rand_node(init_point):
 
-	print("init_point", init_point)
+	#print("init_point", init_point)
 	#generate point on cirumference from origin
 	radius = 14
 	rand_angle =random.uniform(0, (2*np.pi))
@@ -221,18 +221,18 @@ class ranfdom(QDialog):
 		
 		for i in range(len(points_to_add)):
 			point_set.append(points_to_add[i])
-			print("point_set", points_to_add[i])
+			#print("point_set", points_to_add[i])
 
 	def generate_point(self, point, point_size):
 		
 		#define x and y for grid of points creation (round to nearest int)
 		x = point[0]#[0]
 		y = point[1]
-		print(len(point))
-		print("x", x, "y", y)
+		#print(len(point))
+		#print("x", x, "y", y)
 		x =int(x)
 		y =int(y)
-		print("x1", x, "y1", y)
+		#print("x1", x, "y1", y)
 		
 		point_g = []
 
@@ -260,7 +260,7 @@ class ranfdom(QDialog):
             if start[0] > end[0]:
                 inc = -1
 
-            print("ystep: ", y_step, start, end)
+            #print("ystep: ", y_step, start, end)
 
             for x in range(start[0], end[0], inc):
                 y_counter += y_step*inc
@@ -268,7 +268,7 @@ class ranfdom(QDialog):
                     self.draw_points([[x, int(start[1] + y_counter)]], 10, CLEAN_MAP_UPDATED, CLEAN_MAP_UPDATED)
                 #else:
                    #self.draw_points([[x, int(start[1] + y_counter)]], 50, 'clean_map_updated.png', 'clean_map_updated.png')
-                print("checking: ", x, start[1] + int(y_counter))
+                #print("checking: ", x, start[1] + int(y_counter))
                 if (self.OCCUPANCY[x][int(start[1] + y_counter)] == 1):
                     return False
 
@@ -290,7 +290,7 @@ class ranfdom(QDialog):
 		#print("rand poitn", rand_point)
 
 		if self.all_nodes == 0:
-			print("inif")
+			#print("inif")
 			self.all_nodes.append(initial_point)
 
 
@@ -309,20 +309,20 @@ class ranfdom(QDialog):
                     if (self.OCCUPANCY[enviro_x][enviro_y] == 0):
                         break
 
-		print("environment_rand_point ",environment_rand_point)
+		#print("environment_rand_point ",environment_rand_point)
                 selected = False
 
 
-                print("nodes: ", self.NODES)
+                #print("nodes: ", self.NODES)
                 ktree = scp.spatial.KDTree(self.NODES)
 
                 nearest_nodes = ktree.query(environment_rand_point, 20)[1]
-                print ("nearest: ", nearest_nodes)
+                #print ("nearest: ", nearest_nodes)
                 for n in nearest_nodes:
                     if n >= len(ktree.data):
                         break
                     if self.check_line(ktree.data[n], environment_rand_point, False):
-                        print("selected: ", ktree.data[n])
+                        #print("selected: ", ktree.data[n])
                         self.NODES.append(environment_rand_point)
                         self.TREE[tuple(environment_rand_point)] = Node(self.TREE[tuple(ktree.data[n])], environment_rand_point)
                         (self.TREE[tuple(environment_rand_point)]).nextNodes.append(self.TREE[tuple(environment_rand_point)])
@@ -343,7 +343,7 @@ class ranfdom(QDialog):
                         self.check_line(ktree.data[n], self.dest_clicked_point, True)
                         break
 
-                print(self.NODES)
+                #print(self.NODES)
 
 		#neig_idx = knn_search(enviroment_rand_point,self.all_nodes,1)
 
@@ -414,9 +414,9 @@ class ranfdom(QDialog):
 			self.START_POINT = self.generate_point(clicked_point, 5)
 			self.append_points(goal_posts, self.START_POINT)
 			self.append_points(goal_posts, self.DEST_POINT)	
-			print("START_POINT ", self.START_POINT)
-			print("goal_posts", len(goal_posts))
-			print("starting")
+			#print("START_POINT ", self.START_POINT)
+			#print("goal_posts", len(goal_posts))
+			#print("starting")
 
 		#draw point at destination position
 		if(self.radioButton_2.isChecked()):

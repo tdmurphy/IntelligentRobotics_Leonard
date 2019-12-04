@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="scheduler" type="Node.py" name="scheduler" output="screen" />
+	<node pkg="scheduler" type="personFinder.py" name="personFinder" output="screen" />
+	<node pkg="scheduler" type="tester.py" name="tester" output="screen" />
+</launch>

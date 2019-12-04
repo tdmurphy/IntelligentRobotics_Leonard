@@ -1,0 +1,11 @@
+<launch>
+	<node pkg="package_vision" type="video_detection_node.py" name="Detector" output="screen" />
+	<node pkg="package_vision" type="image_detector_node.py" name="Detector" output="screen" />
+	<node pkg="package_vision" type="image_detection_node.py" name="Detector" output="screen" />
+	<node pkg="package_vision" type="detector_node.py" name="Detector" output="screen" />
+	<node pkg="package_vision" type="detection_computation.py" name="DetectorComputer" output="screen" />
+	<node pkg="package_vision" type="detection_computation.py" name="Detector" output="screen" />
+	<node pkg="package_vision" type="big_yolo_node.py" name="Detector" output="screen" />
+</launch>
+
+

@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="txt_to_sp" type="speak.py" name="tts" output="screen" />
+</launch>

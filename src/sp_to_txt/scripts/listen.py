@@ -18,21 +18,27 @@ def processAudio():
 	while shouldListen:
 		rospy.loginfo("Begun listening")
 		with sr.Microphone() as source:
-			listener.adjust_for_ambient_noise(source, duration=1)
-			print('\a')
-			rospy.loginfo("Node is listening")
-			audio = listener.listen(source, timeout=5)
-			rospy.loginfo("Captured audio. Processing...")
-			print('\a')
-		try:
-			text = listener.recognize_google(audio)
-			rospy.loginfo("Audio processed as : " + text)
-			processedAudio.publish(text)
-			shouldListen = False
-		except sr.UnknownValueError:
-			rospy.loginfo("Empty text - Could not recognise utterance")
-		except sr.RequestError as e:
-			rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
+			try:
+				listener.adjust_for_ambient_noise(source, duration=1)
+				print('\a')
+				rospy.loginfo("Node is listening")
+				audio = listener.record(source, duration=5)
+				rospy.loginfo("Captured audio. Processing...")
+				print('\a')
+				text = listener.recognize_google(audio)
+				rospy.loginfo("Audio processed as : " + text)
+				processedAudio.publish(text)
+				shouldListen = False
+			except sr.WaitTimeoutError:
+				rospy.loginfo("Listen time exceeded...")
+				processedAudio.publish("")
+				shouldListen = False
+			except sr.UnknownValueError:
+				rospy.loginfo("Empty text - Could not recognise utterance")
+				processedAudio.publish("")
+				shouldListen = False
+			except sr.RequestError as e:
+				rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))
 
 
 def start_listening(data):

@@ -8,12 +8,12 @@ now = datetime.datetime.now()
 stamp = now.strftime("%H:%M:%S-")
 print(stamp)
 
-camera = cv2.VideoCapture(2)
+camera = cv2.VideoCapture(5)
 count = 0
 
 global image_type
 
-base_path = "./images/"
+base_path = "./input/images/"
 
 image_type = sys.argv[1]
 
@@ -23,7 +23,7 @@ if not os.path.exists(full_path):
 
 cv2.namedWindow("Camera View")
 while(True):
-	global count
+	global counts
 	print(count)
 	ret, frame = camera.read()
 	key = cv2.waitKey(50)

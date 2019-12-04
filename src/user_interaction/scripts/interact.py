@@ -101,8 +101,6 @@ def waitForMessage():
 def createMsgTask(response):
     global processedSpeech
 
-    originalResponse = response
-
     taskCreated = False
 
     while not taskCreated:
@@ -131,8 +129,11 @@ def createMsgTask(response):
         if (msgToSend is None or sender is None) or (recipient is None or urgency is None):
             waitUntilDone(response.query_result.fulfillment_text)
 
-            request = waitForMessage()
-            processedSpeech = ""
+            request = " "
+            while request != " ":
+            	request = waitForMessage()
+            	processedSpeech = ""
+
             response = sendToDialogflow(request)
 
         else:
@@ -141,21 +142,21 @@ def createMsgTask(response):
     waitUntilDone(response.query_result.fulfillment_text)
     waitUntilDone("Is this correct?")
 
-    confirmation = waitForMessage()
-    processedSpeech = ""
+    confirmation = " "
+    while confirmation != " ":
+    	confirmation = waitForMessage()
+    	processedSpeech = ""
+
     if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         waitUntilDone("Great! I'll get round to it. Thank you")
         sendTask("message",sender, recipient, msgToSend, "", urgency)
     else:
-        waitUntilDone("I must have misunderstood something, lets start again.")
-        createMsgTask(originalResponse)
+        beginConversation("I must have misunderstood something, lets start again. What can I do for you?")
 
 
 def createPkgTask(response):
     global processedSpeech
     taskCreated = False
-
-    originalResponse = response
 
     while not taskCreated:
         parameters = MessageToDict(response.query_result.parameters)
@@ -183,9 +184,10 @@ def createPkgTask(response):
         if (deliveryLoc is None or sender is None) or (recipient is None or urgency is None):
             waitUntilDone(response.query_result.fulfillment_text)
 
-            request = waitForMessage()
-            processedSpeech = ""
-            response = sendToDialogflow(request)
+            request = " "
+            while request != " ":
+            	request = waitForMessage()
+            	processedSpeech = ""
 
         else:
             taskCreated = True
@@ -193,8 +195,11 @@ def createPkgTask(response):
     waitUntilDone(response.query_result.fulfillment_text)
     waitUntilDone("Is this correct?")
 
-    confirmation = waitForMessage()
-    processedSpeech = ""
+    confirmation = " "
+    while confirmation != " ":
+    	confirmation = waitForMessage()
+    	processedSpeech = ""
+
     if ("yes" in confirmation.lower() or "correct" in confirmation.lower()) and (not "not" in confirmation.lower() or not "no" in confirmation.lower()):
         objectsBeforePlacement = numObjects
         obNotAdded = True
@@ -208,8 +213,7 @@ def createPkgTask(response):
 
         sendTask("package", sender, recipient, "", deliveryLoc, urgency)
     else:
-        waitUntilDone("I must have misunderstood something, lets start again.")
-        createPkgTask(originalResponse)
+        beginConversation("I must have misunderstood something, lets start again. What can I do for you?")
 
 
 def listenForCommand():
@@ -223,9 +227,9 @@ def listenForCommand():
     	if "leonard" in text.lower():
         	beginConversation("Hello")
     elif justDelivered:
-    	beginConversation("Thats's everything I have for you, is there anything else I can do?")
     	justDelivered = False
     	ignoreResult = False
+    	beginConversation("Thats's everything I have for you, is there anything else I can do?")
 
 
 def beginConversation(opener):
@@ -239,8 +243,13 @@ def beginConversation(opener):
     else:
     	waitUntilDone(opener)
 
-    request = waitForMessage()
     processedSpeech = ""
+
+    request = " "
+    while request != " ":
+    	request = waitForMessage()
+    	processedSpeech = ""
+
     result = sendToDialogflow(request)
 
     if result.query_result.intent.display_name == "create-msg-task":
@@ -256,7 +265,7 @@ def deliverTask(data):
 	global delivering, justDelivered, ignoreResult
 	delivering = True
 	ignoreResult = True
-	loginfo("Received tasks to deliver: {0}".format(data.data))
+	rospy.loginfo("Received tasks to deliver: {0}".format(data.data))
 
 	tasks = data.data.split("#")
 	tasksToDeliver = []

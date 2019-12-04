@@ -1,0 +1,44 @@
+<launch>
+		
+
+	
+		<!-- custom_nodes launch includes-->
+		<include file="/data/private/robot/catkin_ws/src/assignment1/launch/laser.launch" />
+	<staticText> 
+		<include file="/data/private/robot/catkin_ws/src/user_interaction/launch/user_interaction.launch" />
+		<include file="/data/private/robot/catkin_ws/src/txt_to_sp/launch/txt_to_sp.launch" />
+		<include file="/data/private/robot/catkin_ws/src/scheduler/launch/scheduler.launch" />
+		<include file="/data/private/robot/catkin_ws/src/face_vision/launch/laser.launch" />
+		<include file="/data/private/robot/catkin_ws/src/package_vision/package_vision/laser.launch" />
+	</staticText> 
+
+
+	<staticText> 
+		<!-- robot essential packages-->
+		<include file="//data/private/ros/socspioneer/p2os_laser.launch" />
+	</staticText> 	
+
+
+		<!-- Rospackage essential packages -->
+		<node type="rviz" name="rviz" pkg="rviz" args="-d $(find route_navigation)/leonard.rviz" />
+		<node type="amcl" name="amcl" pkg="amcl" args="scan:=base_scan" />
+  		<param name="use_map_topic" value="true"/>
+		<arg name="map_file" default="$(find route_navigation)/clean_map.yaml"/>
+  		<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+		
+		<!-- route_nav nodes -->
+		<node pkg="route_navigation" type="movement.py" name="Mover" output="screen" />
+		<node pkg="route_navigation" type="navigation_node.py" name="destination_reciever" args="none" />
+
+
+		
+
+	 
+		<!-- Rospackage simulation utilities -->
+		<arg name="world_file" default="$(find route_navigation)/clean_map.world"/>
+  		<node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)" /> 
+	<staticText>	
+	</staticText> 
+		<node pkg="route_navigation" type="fake_scheduler.py" name="fake_scheduler" output="screen" />
+
+</launch> 

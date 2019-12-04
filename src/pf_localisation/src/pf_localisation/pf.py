@@ -25,7 +25,7 @@ class PFLocaliser(PFLocaliserBase):
         self.ODOM_DRIFT_NOISE=1
  
         # ----- Sensor model parameters
-        self.NUMBER_PREDICTED_READINGS = 200     # Number of readings to predict
+        self.NUMBER_PREDICTED_READINGS = 80     # Number of readings to predict
         self.plotted=False
 	self.errorList=np.asarray([])
 	self.count=0
@@ -49,10 +49,10 @@ class PFLocaliser(PFLocaliserBase):
         for num in range (0,self.NUMBER_PREDICTED_READINGS):
             p= Pose()	#initialising pose
 
-            xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.8)	#noise calculations
-            yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.8)
+            xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.2)	#noise calculations
+            yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.2)
             zNoise=0
-            random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.8)
+            random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.2)
 
             p.position.x=initialpose.pose.pose.position.x + xNoise		#pose positions+noise
             p.position.y=initialpose.pose.pose.position.y + yNoise

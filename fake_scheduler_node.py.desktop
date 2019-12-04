@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Link to fake_scheduler_node.py
+Type=Link
+URL=https://github.com/tdmurphy/IntelligentRobotics_Leonard/blob/route-planning-changes/src/fake_scheduler/src/fake_scheduler_node.py
+Icon=text-html

@@ -281,21 +281,29 @@ class ranfdom(QDialog):
 				x = int(x)
 				y=int(y)
 				multilist.append([x,y])
-			if count == 1:
-				count = 0
+				
 
 			if count == 0:
+				count = 2
+
+			if count == 1:
+				count = 0
+			if count == 2:
 				count = 1
+				
 	
 		return multilist
 
 
 	def render(self,data):
-		
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
 		print("in")
 		print(data.data)
 		x = []
 		x = self.translate_from(data.data)
+
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+
 		print(x)
 		#self.draw_points(self.translate_from(data)
 		pointset =[]
@@ -305,7 +313,11 @@ class ranfdom(QDialog):
 
 
 		self.draw_points(pointset, 50, 'clean_map_simple.png', 'clean_map_updated.png')
+		 
 		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.show()
+		
+		
 	
 	def destination_subscriber(self):
 		
@@ -316,6 +328,7 @@ class ranfdom(QDialog):
 		rospy.Subscriber("route_nodes", Float32MultiArray, self.render)
     		# rate = rospy.Rate(10) # 10hz
     		rospy.spin()
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
 
 	def append_points(self,point_set, points_to_add):
 
@@ -345,7 +358,7 @@ class ranfdom(QDialog):
 		return point_g
 
 	def draw_points(self,point_set, color, input_image, output_image):
-		print("point set ", point_set)
+		#print("point set ", point_set)
 		picture = Image.open(input_image)
 		for i in range(len(point_set)):
 			
@@ -376,6 +389,7 @@ class ranfdom(QDialog):
 
 	def call_RRT(self , event):
 		init_node = []
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
 		self.destination_subscriber()
 		# if len(self.NODES)==0:
 		# 	self.NODES.append(self.start_clicked_point)
