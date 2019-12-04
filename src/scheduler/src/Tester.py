@@ -44,7 +44,7 @@ if __name__ == '__main__':
 	tasks=[t1,t2]
 	published=False
         tester(tasks,published)
-	listener()
+	#listener()
      except rospy.ROSInterruptException:
         pass
 

@@ -28,7 +28,7 @@ class PersonFinder:
 	distributions={}
 	current_pos=[0,0]
 	def __init__(self):
-		self.picture = Image.open("/home/esha/catkin_ws/src/route_navigation/clean_map_updated.png")#"/data/private/robot/catkin_ws/src/route_navigation/clean_map_updated.png")
+		self.picture = Image.open("/data/private/robot/catkin_ws/src/route_navigation/clean_map_updated.png")#"/data/private/robot/catkin_ws/src/route_navigation/clean_map_updated.png")
 		
 		self.width, self.height = self.picture.size
 		self.X = np.arange(0, self.width, 1)
