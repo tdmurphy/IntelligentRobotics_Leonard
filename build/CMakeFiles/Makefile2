@@ -605,6 +605,96 @@ exploration/preinstall:
 .PHONY : exploration/preinstall
 
 #=============================================================================
+# Directory level rules for directory face_vision
+
+# Convenience name for "all" pass in the directory.
+face_vision/all:
+
+.PHONY : face_vision/all
+
+# Convenience name for "clean" pass in the directory.
+face_vision/clean:
+
+.PHONY : face_vision/clean
+
+# Convenience name for "preinstall" pass in the directory.
+face_vision/preinstall:
+
+.PHONY : face_vision/preinstall
+
+#=============================================================================
+# Directory level rules for directory package_vision
+
+# Convenience name for "all" pass in the directory.
+package_vision/all:
+
+.PHONY : package_vision/all
+
+# Convenience name for "clean" pass in the directory.
+package_vision/clean:
+
+.PHONY : package_vision/clean
+
+# Convenience name for "preinstall" pass in the directory.
+package_vision/preinstall:
+
+.PHONY : package_vision/preinstall
+
+#=============================================================================
+# Directory level rules for directory route_navigation
+
+# Convenience name for "all" pass in the directory.
+route_navigation/all:
+
+.PHONY : route_navigation/all
+
+# Convenience name for "clean" pass in the directory.
+route_navigation/clean:
+
+.PHONY : route_navigation/clean
+
+# Convenience name for "preinstall" pass in the directory.
+route_navigation/preinstall:
+
+.PHONY : route_navigation/preinstall
+
+#=============================================================================
+# Directory level rules for directory scheduler
+
+# Convenience name for "all" pass in the directory.
+scheduler/all:
+
+.PHONY : scheduler/all
+
+# Convenience name for "clean" pass in the directory.
+scheduler/clean:
+
+.PHONY : scheduler/clean
+
+# Convenience name for "preinstall" pass in the directory.
+scheduler/preinstall:
+
+.PHONY : scheduler/preinstall
+
+#=============================================================================
+# Directory level rules for directory sp_to_txt
+
+# Convenience name for "all" pass in the directory.
+sp_to_txt/all:
+
+.PHONY : sp_to_txt/all
+
+# Convenience name for "clean" pass in the directory.
+sp_to_txt/clean:
+
+.PHONY : sp_to_txt/clean
+
+# Convenience name for "preinstall" pass in the directory.
+sp_to_txt/preinstall:
+
+.PHONY : sp_to_txt/preinstall
+
+#=============================================================================
 # Directory level rules for directory pf_localisation
 
 # Convenience name for "all" pass in the directory.
@@ -2105,6 +2195,42 @@ pf_localisation/CMakeFiles/actionlib_generate_messages_cpp.dir/clean:
 clean: pf_localisation/CMakeFiles/actionlib_generate_messages_cpp.dir/clean
 
 .PHONY : clean
+
+#=============================================================================
+# Directory level rules for directory txt_to_sp
+
+# Convenience name for "all" pass in the directory.
+txt_to_sp/all:
+
+.PHONY : txt_to_sp/all
+
+# Convenience name for "clean" pass in the directory.
+txt_to_sp/clean:
+
+.PHONY : txt_to_sp/clean
+
+# Convenience name for "preinstall" pass in the directory.
+txt_to_sp/preinstall:
+
+.PHONY : txt_to_sp/preinstall
+
+#=============================================================================
+# Directory level rules for directory user_interaction
+
+# Convenience name for "all" pass in the directory.
+user_interaction/all:
+
+.PHONY : user_interaction/all
+
+# Convenience name for "clean" pass in the directory.
+user_interaction/clean:
+
+.PHONY : user_interaction/clean
+
+# Convenience name for "preinstall" pass in the directory.
+user_interaction/preinstall:
+
+.PHONY : user_interaction/preinstall
 
 #=============================================================================
 # Special targets to cleanup operation of make.

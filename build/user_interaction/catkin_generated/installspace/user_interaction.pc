@@ -1,0 +1,8 @@
+prefix=/data/private/robot/catkin_ws/install
+
+Name: user_interaction
+Description: Description of user_interaction
+Version: 0.0.0
+Cflags: 
+Libs: -L/data/private/robot/catkin_ws/install/lib 
+Requires: 
