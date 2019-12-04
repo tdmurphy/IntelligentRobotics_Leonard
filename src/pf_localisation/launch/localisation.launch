@@ -1,0 +1,6 @@
+<launch>
+	<node type="amcl" name="amcl" pkg="amcl" args="scan:=base_scan" />
+	<staticText>
+	<node pkg="pf_localisation" type="node.py" name="pf_localisation" output="screen" />
+	</staticText>
+</launch>

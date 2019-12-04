@@ -130,11 +130,10 @@ class PFLocaliser(PFLocaliserBase):
             		zNoise=0
             		random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.3)
 
-            		p.position.x=sampled_particle.position.x# + xNoise		#pose positions+noise
-            		p.position.y=sampled_particle.position.y #+ yNoise
-            		p.position.z=sampled_particle.position.z #+ zNoise
-            		p.orientation=rotateQuaternion(sampled_particle.orientation,0)#random_angular_noise)
-			
+            		p.position.x=sampled_particle.position.x + xNoise		#pose positions+noise
+            		p.position.y=sampled_particle.position.y + yNoise
+            		p.position.z=sampled_particle.position.z + zNoise
+            		p.orientation=rotateQuaternion(sampled_particle.orientation,random_angular_noise)
 			#print("0.05")
 			#print("0.05 ",p.position.x)
 		#print("Appending to new_PC ",p.position.x)
@@ -284,8 +283,6 @@ class PFLocaliser(PFLocaliserBase):
 	#if (self.plotted==False and self.count==2):    
 		#self.plotArrows(eps_val,pos_clustering,q)
 	self.count+=1
-	print("Length of cloud",len(self.particlecloud.poses))
-	print("Estimated pose",p)
         return p
 
 

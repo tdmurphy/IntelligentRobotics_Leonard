@@ -8,11 +8,11 @@ import rospy
 from std_msgs.msg import Bool, String
 
 execution_path = os.getcwd()
-camera = cv2.VideoCapture(4)
+camera = cv2.VideoCapture(0)
 
-minimum_percentage_probability = 0.60
-min_low_probability = 0.1
-count_weight = 0.15
+minimum_percentage_probability = 60
+min_low_probability = 8
+count_weight = 0.1
 
 def show_frame(camera):
 	if(not camera.isOpened()):
@@ -32,21 +32,20 @@ detector.setModelPath(model_path)
 detector.setJsonPath("./models/detection_config.json")
 detector.loadModel() '''
 
-'''YOLO TINY'''
+'''YOLO TINY
 model_path="models/yolo-tiny.h5"
 detector = ObjectDetection()
 detector.setModelTypeAsTinyYOLOv3()
 detector.setModelPath(model_path)
 detector.loadModel() 
+'''
 
-
-'''RESNET
+'''RESNET'''
 model_path="models/resnet50_coco.h5"
 detector = ObjectDetection()
 detector.setModelTypeAsRetinaNet()
 detector.setModelPath(model_path)
 detector.loadModel(detection_speed='fast') 
-'''
 
 objects_dict = {}
 
@@ -95,10 +94,10 @@ def edit_dict(detections):
 	#print('percentage prob after: %f' % percentage_prob)
 	#reset the count of objects that are not recorded 
 	objects = set(objects)
-	#print(objects)
+	print(objects)
 	for ob, _ in objects_dict.items():
 		if not(ob in objects):
-			objects_dict[ob] = max(0, objects_dict[ob] - 1) 		
+			objects_dict[ob] = 0 		
 		
 	return objects_string		
 
@@ -113,8 +112,8 @@ def convert_hsv(frame):
 	return cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
 
 def increase_brightness(frame):
-	alpha = 1.1
-	beta = 1
+	alpha = 1.1 
+	beta = 0
 	return cv2.convertScaleAbs(frame, alpha=alpha, beta=beta)
 
 def talker():
@@ -128,6 +127,4 @@ if __name__ == '__main__':
 			talker()
 		except rospy.ROSInterruptException:
 			pass 
-
-#heyyyy
 

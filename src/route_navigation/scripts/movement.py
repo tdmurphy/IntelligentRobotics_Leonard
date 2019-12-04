@@ -102,24 +102,24 @@ def getHeading (pose, dest, heading):
             return -math.pi/2
     #mapAngle = math.atan(xDist/yDist)
     mapAngle = math.atan2(yDist,xDist)
-    print('mapangle1: ', mapAngle)
+    #print('mapangle1: ', mapAngle)
     #if xDist < 0 and yDist < 0:
     #    mapAngle = -math.pi + mapAngle
     #elif xDist < 0 and yDist > 0:
     #    mapAngle = math.pi - mapAngle
 
-    print (mapAngle)
+    #print (mapAngle)
 
-    print("getheading: ", pose, dest, heading)
-    print("original coords: ", TRUEPOSE)
-    print("mapAngle: ", mapAngle)
+    #print("getheading: ", pose, dest, heading)
+    #print("original coords: ", TRUEPOSE)
+    #print("mapAngle: ", mapAngle)
     total = (mapAngle + 2*math.pi) - (HEADING + 2*math.pi)
 
     while abs(total) > 2*math.pi:
-        print("unmod total", total)
+        #print("unmod total", total)
         total = (total - np.sign(total)*2*(math.pi))
     #total -= np.sign(total)*math.pi
-    print('total: ', total)
+    #print('total: ', total)
     return total #(????)
 
 
@@ -132,7 +132,7 @@ def getHeading3 (pose, dest, heading):
     absv1 = math.sqrt(v1[0]**2 + v1[1]**2)
     absv2 = math.sqrt(v2[0]**2 + v2[1]**2)
     cosangle = dotProd/(absv1*absv2)
-    print("Dotprod",dotProd,"Abs values",absv1,absv2,"V2",v2,"Dest",dest,"Pose",pose)
+    #print("Dotprod",dotProd,"Abs values",absv1,absv2,"V2",v2,"Dest",dest,"Pose",pose)
     print('Current heading is',np.degrees(heading), heading,'Angle between me and the goal ',np.degrees( math.acos(cosangle)),cosangle,math.acos(cosangle))
 
     return math.acos(cosangle)
@@ -141,7 +141,7 @@ def getHeading4(pose, dest, heading):
     perp = heading + math.pi/2
     v2 =np.asarray( [ dest[0] - pose[0], dest[1] - pose[1]])
     v1 =np.asarray( [1, perp])
-    print(np.dot(v2, v1))
+    #print(np.dot(v2, v1))
     return np.dot(v2, v1)
 
 #def detectObst():
@@ -161,7 +161,7 @@ def getHeading4(pose, dest, heading):
 def checkInBoundary(p1, p2):
     dist = math.sqrt((p2[1] - p1[1])**2 + (p2[0] - p1[0])**2)
     
-    print("dist: ", dist)
+    #print("dist: ", dist)
     return dist<=WAYPOINT_BOUNDARY
 
 def moveBot (data):
@@ -233,11 +233,11 @@ def moveBot (data):
                     if not frontLeftDetecting or not farLeftDetecting:
                         base_data.angular.z = 0.6
                         TURNED_LEFT = True
-                        print('turning left')
+                        #print('turning left')
                     else:
                         base_data.angular.z = -0.6
                         TURNED_LEFT = False
-                        print('turning right')
+                        #print('turning right')
                 AVOIDING = True
             else:
                 if (TURNED_LEFT and not farRightDetecting) or ((not TURNED_LEFT) and not farLeftDetecting):
@@ -293,7 +293,7 @@ def moveBot (data):
                 print("GOAL!")
                 MOVE = False
             elif checkInBoundary(AMCL, DIRECTIONS[0]):
-                print("got to checkpoint: ", DIRECTIONS[0])
+                #print("got to checkpoint: ", DIRECTIONS[0])
                 base_data.linear.x = 0
                 DIRECTIONS.pop(0)
             elif not abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE:
@@ -324,7 +324,7 @@ def talker():
     rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, poseSubscriber)
     print('amcl: ', AMCL)
     rospy.Subscriber('destination_pose', Float32MultiArray, destSubscriber)
-    print('dest: ',  DEST)
+    #print('dest: ',  DEST)
     rospy.Subscriber('laser_reading', Float32MultiArray, moveBot)
     rospy.Subscriber('stop_moving', String, stopSubscriber)
     # rate = rospy.Rate(10) # 10hz
