@@ -7,7 +7,7 @@ import numpy as np
 class FacialRecogniser():
     
     def __init__(self):
-	self.camera=0
+	self.camera=5	
         self.known_face_encodings = []
         self.known_face_names =[]
         self.unknownCount=0

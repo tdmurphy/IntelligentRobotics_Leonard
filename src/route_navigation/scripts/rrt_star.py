@@ -25,7 +25,7 @@ def occupancy_grid(image_path):
    		for y in range (height):
    			current_color = picture.getpixel( (x,y) )
    			#print("current color upd ", current_color)
-   			if current_color == (254, 254, 254):
+   			if current_color == (254):
    				print("x,y ", x, "  ", y)
    				Matrix[x][height-1 - y] = 0
    				#print("unoc ", Matrix[x][y])

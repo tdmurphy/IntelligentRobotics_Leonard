@@ -20,7 +20,7 @@ current_pos=[0,0]
 weight_seenbackgroundTarget=150
 
 def setCurrentPosition(data):
-    EstimatePosition = data.data.pose.position
+    EstimatePosition = data.pose.position
     current_pos=[EstimatePosition.x,EstimatePosition.y]
 
 def createTask(data):

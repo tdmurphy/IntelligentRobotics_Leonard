@@ -39,12 +39,12 @@ if __name__ == '__main__':
      try:
         rospy.init_node('tester', anonymous=True)
 	#taskType, sender, recipient, payLoad, location, modifier
-	t1='message|Tom|Esha|hi||0'
-	t2='message|Esha|Alexis|hello, I hate robotics||1' 
-	tasks=[t1,t2]
+	t1='message|Rehaan|Esha|hi||0'
+	#t2='message|Esha|Alexis|hello, I hate robotics||1' 
+	tasks=[t1]
 	published=False
         tester(tasks,published)
-	#listener()
+	listener()
      except rospy.ROSInterruptException:
         pass
 

@@ -49,8 +49,9 @@ class PersonFinder:
 
 	def getGaussian(self,cord):	
 		mu=[cord[0],cord[1]]
+   		#print("Colour of where the person was seen",self.picture.getpixel( (cord[0],cord[1]) ),self.X.shape)
 		covariance=[10000,10000]
-		XY=np.column_stack([self.Y.flat,self.X.flat])
+		XY=np.column_stack([self.X.flat,self.Y.flat])
 		G = pow(10,5)*multivariate_normal.pdf(XY,mean=mu,cov=covariance)
 		G=G.reshape(self.X.shape)
 		for x in range (self.X.shape[0]):
@@ -141,13 +142,14 @@ class PersonFinder:
 
 	def getMostLikelyCord(self,person):
 		Z = self.getZValues(person)
+		#print(person,"was last seen in positions",PersonFinder.distributions[person])
 		maxVal,maxValX,maxValY=0,-1,-1
 		for x in range (self.X.shape[0]):
 			for y in range (self.X.shape[1]):
 				if Z[x][y]>maxVal:
 					maxVal=Z[x][y]
-					maxValX=x
-					maxValY=y
+					maxValY=x
+					maxValX=y
 		if(person not in PersonFinder.distributions):
 			#print("Trying somewhere popular")
 			maxValX,maxValY=self.getRandomPopularLoc()
@@ -157,7 +159,7 @@ class PersonFinder:
 		return[maxValX,maxValY]
 
 def setCurrentPosition(data):
-	estimatedpose = data.data.pose.position
+	estimatedpose = data.pose.position
 	PersonFinder.current_pos=[estimatedpose.x,estimatedpose.y]
 
 def seenSomeone(data):
@@ -169,6 +171,7 @@ def listener():
     global pf
     print("Listening")
     pf=PersonFinder()
+    #pf.getMostLikelyCord('Esha')
     rospy.init_node('personFinder', anonymous=True)
     rospy.Subscriber("deliver", String, seenSomeone)
     rospy.Subscriber("estimatedpose", PoseStamped, setCurrentPosition)

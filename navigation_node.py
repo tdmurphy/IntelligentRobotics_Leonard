@@ -1,5 +1,5 @@
-# !/usr/bin/env python
-import sys, os 
+#!/usr/bin/env python
+import sys 
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication, QDialog
 from PyQt5.uic import loadUi
@@ -15,7 +15,12 @@ from sklearn.neighbors import KDTree
 from numpy import random,argsort,sqrt
 from pylab import plot,show
 import array as arr
-import rrt_star
+import rospy
+from geometry_msgs.msg import Twist,Point,PoseWithCovariance,Pose
+from std_msgs.msg import Float32MultiArray, String
+from nav_msgs.msg import Odometry
+
+from geometry_msgs.msg import PoseWithCovarianceStamped as Pose
 
 # def knn_search(x, D, K):
 #  """ find K nearest neighbours of data among D """
@@ -27,10 +32,21 @@ import rrt_star
 #  # return the indexes of K nearest neighbours
 #  return idx[:K]
 
-DIRNAME = os.path.dirname(__file__)
-#print(DIRNAME, __file__)
-UIPATH  = os.path.join(DIRNAME, '../ui/')
-CLEAN_MAP_UPDATED = os.path.join(UIPATH, 'clean_map_updated.png')
+#def translate_to():
+#f = [34,78, 986, 678, 567576, 567]
+
+
+
+
+	
+
+		
+		
+
+
+
+
+
 
 class Node:
     prevNode = None
@@ -40,6 +56,36 @@ class Node:
     def __init__(self, prevNode, coords):
         self.prevNode = prevNode
         self.coords = coords
+
+ 
+def generate_point_g(self, point, point_size):
+	#define x and y for grid of points creation (round to nearest int)
+		x = point[0]#[0]
+		y = point[1]
+		print(len(point))
+		print("x", x, "y", y)
+		x =int(x)
+		y =int(y)
+		print("x1", x, "y1", y)
+		
+		point_g = []
+
+		#creates a grid box with point at centre of box
+		for i in range(x-point_size, x +point_size):
+			for j in range(y-point_size, y+point_size):
+				point_g.append([i,j])
+
+		return point_g
+
+def draw_points_g(self,point_set, color, input_image, output_image):
+	picture = Image.open(input_image)
+	for i in range(len(point_set)):
+			
+		if(point_set[i] != 0):
+			#print("pointif :", i ,"  ", point_set[i])
+			picture.putpixel((point_set[i]), (color))
+			picture.save(output_image)
+
 
 
 def draw_line_between_points(point1, point2):
@@ -61,17 +107,17 @@ def draw_line_between_points(point1, point2):
 		x_1 = point1[1]
 		x_2 = point2[1]
 
-	#print("x1y1: ",x_1,y_1, " x2y2 ", x_2, y_2 )
+	print("x1y1: ",x_1,y_1, " x2y2 ", x_2, y_2 )
 
 	#find y = mx +c
 	#solve for m 
 	#if((x_2 - x_1) ** add div zero edge case
 	m = (y_2 - y_1)/(x_2 - x_1)
-	#print("m", m)
+	print("m", m)
 
 	# solve for c
 	c = y_1 - (m*x_1)
-	#print("c", c)
+	print("c", c)
 
 	all_pixals_on_line = []
 
@@ -95,18 +141,18 @@ def draw_line_between_points(point1, point2):
 
 		for y in range(y_2, (y_1+1)):
 			x = (y - c)/m
-			#print("y",y)
+			print("y",y)
 			y = int(y)
 			x = int(x)
-			#print("x ", x)
+			print("x ", x)
 			all_pixals_on_line.append([x, y])
 	else:
 		for y in range(y_1, (y_2+1)):
 			x = (y - c)/m
-			#print("y",y)
+			print("y",y)
 			y = int(y)
 			x = int(x)
-			#print("x ", x)
+			print("x ", x)
 			all_pixals_on_line.append([x, y])
 
 	#add yrange
@@ -143,7 +189,7 @@ def simplify_image(image_path):
 
 
 	#now we rewrite the image to new black and white comprising of only two rgb values
-	picture.save(os.path.join(UIPATH, "clean_map_simple.png"))
+	picture.save("clean_map_simple.png")
 
 
 def occupancy_grid(image_path):
@@ -160,7 +206,7 @@ def occupancy_grid(image_path):
 	for x in range (width):
    		for y in range (height):
    			current_color = picture.getpixel( (x,y) )
-   			#print("current color upd ", current_color)
+   			print("current color upd ", current_color)
    			if current_color == 254:
    				#print("x,y ", x, "  ", y)
    				Matrix[x][y] = 0
@@ -180,7 +226,7 @@ def occupancy_grid(image_path):
 
 def generate_rand_node(init_point):
 
-	#print("init_point", init_point)
+	print("init_point", init_point)
 	#generate point on cirumference from origin
 	radius = 14
 	rand_angle =random.uniform(0, (2*np.pi))
@@ -197,24 +243,92 @@ def generate_rand_node(init_point):
 
 #GUI
 class ranfdom(QDialog):
-        global Node
-
+	global Node
 	START_POINT = [0,0]
 	DEST_POINT = [0,0]
-        OCCUPANCY = occupancy_grid(os.path.join(UIPATH, 'clean_map_updated.png'))
-        NODES = []
-        TREE = {}
+	OCCUPANCY = occupancy_grid('clean_map_updated.png')
+	NODES = []
+	TREE = {}
 	
 
 	def __init__(self):
 		super(ranfdom,self).__init__()
-		loadUi(os.path.join(UIPATH, 'ranfdom.ui'), self)
+		loadUi('ranfdom.ui', self)
 		self.setWindowTitle('ranfdom PyQt5 Gui')
-                self.label.setPixmap(QPixmap(CLEAN_MAP_UPDATED))
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
 		self.label.mousePressEvent = self.getPos
 		self.pushButton.clicked.connect(self.call_RRT)#self.print_ham)#RRT)
 		
 	@pyqtSlot()
+
+	def translate_from(self,rrt_points_2d_list):
+	#new_list = []
+		count = 0
+		x = 0
+		y = 0
+		multilist = []
+		for i in range(len(rrt_points_2d_list)):
+			if count == 0:
+	
+				print("1if ",rrt_points_2d_list[i])
+				x = rrt_points_2d_list[i]
+	
+			if count == 1:
+			
+				print("0if ",rrt_points_2d_list[i])
+				y = rrt_points_2d_list[i]
+				print("x", x, "y", y)
+				x = int(x)
+				y=int(y)
+				multilist.append([x,y])
+				
+
+			if count == 0:
+				count = 2
+
+			if count == 1:
+				count = 0
+			if count == 2:
+				count = 1
+				
+	
+		return multilist
+
+
+	def render(self,data):
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		print("in")
+		print(data.data)
+		x = []
+		x = self.translate_from(data.data)
+
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+
+		print(x)
+		#self.draw_points(self.translate_from(data)
+		pointset =[]
+		for i in range(len(x)):
+			points2add = self.generate_point(x[i], 5)
+			self.append_points(pointset,points2add)
+
+
+		self.draw_points(pointset, 50, 'clean_map_simple.png', 'clean_map_updated.png')
+		 
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.show()
+		
+		
+	
+	def destination_subscriber(self):
+		
+		
+    		rospy.init_node('destination_reciever', anonymous=True)
+    		rospy.Subscriber('/destination_pose',Float32MultiArray,destination_recieved) #Float32MultiArray
+    		rospy.Subscriber("/amcl_pose", Pose, current_position_recieved)
+		rospy.Subscriber("route_nodes", Float32MultiArray, self.render)
+    		# rate = rospy.Rate(10) # 10hz
+    		rospy.spin()
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
 
 	def append_points(self,point_set, points_to_add):
 
@@ -244,6 +358,7 @@ class ranfdom(QDialog):
 		return point_g
 
 	def draw_points(self,point_set, color, input_image, output_image):
+		#print("point set ", point_set)
 		picture = Image.open(input_image)
 		for i in range(len(point_set)):
 			
@@ -252,36 +367,36 @@ class ranfdom(QDialog):
 				picture.putpixel((point_set[i]), (color))
 		picture.save(output_image)
 
-        def check_line(self, start, end, draw):
-            y_step = float(end[1] - start[1])/float(end[0] - start[0])
-            y_counter = float (0)
+	def check_line(self, start, end, draw):
+		y_step = float(end[1] - start[1])/float(end[0] - start[0])
+		y_counter = float (0)
 
-            inc = 1
-            if start[0] > end[0]:
-                inc = -1
+		inc = 1
+		if start[0] > end[0]:
+			inc = -1
+			print("ystep: ", y_step, start, end)
 
-            #print("ystep: ", y_step, start, end)
+		for x in range(start[0], end[0], inc):
+			y_counter += y_step*inc
+			if(draw):
+				self.draw_points([[x, int(start[1] + y_counter)]], 10, 'clean_map_updated.png', 'clean_map_updated.png')
+				print("checking: ", x, start[1] + int(y_counter))
+			if (self.OCCUPANCY[x][int(start[1] + y_counter)] == 1):
+				return False
+			return True
 
-            for x in range(start[0], end[0], inc):
-                y_counter += y_step*inc
-                if(draw):
-                    self.draw_points([[x, int(start[1] + y_counter)]], 10, CLEAN_MAP_UPDATED, CLEAN_MAP_UPDATED)
-                #else:
-                   #self.draw_points([[x, int(start[1] + y_counter)]], 50, 'clean_map_updated.png', 'clean_map_updated.png')
-                #print("checking: ", x, start[1] + int(y_counter))
-                if (self.OCCUPANCY[x][int(start[1] + y_counter)] == 1):
-                    return False
-
-            return True
 
 
 	def call_RRT(self , event):
 		init_node = []
-                if len(self.NODES)==0:
-                    self.NODES.append(self.start_clicked_point)
-                    self.TREE[tuple(self.start_clicked_point)] = Node(None, self.start_clicked_point)
-		print("START POINT clicked  ___",self.start_clicked_point)
-		self.RRT(self.start_clicked_point, CLEAN_MAP_UPDATED)#init_node)
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+		self.destination_subscriber()
+		# if len(self.NODES)==0:
+		# 	self.NODES.append(self.start_clicked_point)
+		# 	self.TREE[tuple(self.start_clicked_point)] = Node(None, self.start_clicked_point)
+		# print("START POINT clicked  ___",self.start_clicked_point)
+		# self.RRT(self.start_clicked_point, 'clean_map_updated.png')#init_node)
+
 
 	all_nodes = []
 	def RRT(self,initial_point, image_path):
@@ -290,7 +405,7 @@ class ranfdom(QDialog):
 		#print("rand poitn", rand_point)
 
 		if self.all_nodes == 0:
-			#print("inif")
+			print("inif")
 			self.all_nodes.append(initial_point)
 
 
@@ -299,51 +414,51 @@ class ranfdom(QDialog):
 		# Get the size of the image
 		width, height = picture.size
 
-                enivronment_rand_point = [0,0]
+		enivronment_rand_point = [0,0]
 
-                while (True):
-                    enviro_x = np.random.randint(width)
-                    enviro_y = np.random.randint(height)
+		while (True):
+			enviro_x = np.random.randint(width)
+			enviro_y = np.random.randint(height)
 
-                    environment_rand_point = [enviro_x, enviro_y]
-                    if (self.OCCUPANCY[enviro_x][enviro_y] == 0):
-                        break
+			environment_rand_point = [enviro_x, enviro_y]
 
-		#print("environment_rand_point ",environment_rand_point)
-                selected = False
+			if (self.OCCUPANCY[enviro_x][enviro_y] == 0):
+				break
 
+			print("environment_rand_point ",environment_rand_point)
+			selected = False
+			print("nodes: ", self.NODES)
+			ktree = scp.spatial.KDTree(self.NODES)
+			nearest_nodes = ktree.query(environment_rand_point, 20)[1]
 
-                #print("nodes: ", self.NODES)
-                ktree = scp.spatial.KDTree(self.NODES)
-
-                nearest_nodes = ktree.query(environment_rand_point, 20)[1]
-                #print ("nearest: ", nearest_nodes)
-                for n in nearest_nodes:
-                    if n >= len(ktree.data):
-                        break
-                    if self.check_line(ktree.data[n], environment_rand_point, False):
-                        #print("selected: ", ktree.data[n])
-                        self.NODES.append(environment_rand_point)
-                        self.TREE[tuple(environment_rand_point)] = Node(self.TREE[tuple(ktree.data[n])], environment_rand_point)
-                        (self.TREE[tuple(environment_rand_point)]).nextNodes.append(self.TREE[tuple(environment_rand_point)])
-                        self.check_line(ktree.data[n], environment_rand_point, True)
+			print ("nearest: ", nearest_nodes)
+			for n in nearest_nodes:
+				if n >= len(ktree.data):
+					break
+				if self.check_line(ktree.data[n], environment_rand_point, False):
+					print("selected: ", ktree.data[n])
+					self.NODES.append(environment_rand_point)
+					self.TREE[tuple(environment_rand_point)] = Node(self.TREE[tuple(ktree.data[n])], environment_rand_point)
+					(self.TREE[tuple(environment_rand_point)]).nextNodes.append(self.TREE[tuple(environment_rand_point)])
+					self.check_line(ktree.data[n], environment_rand_point, True)
+					break
+				print("nearest to end: ", nearest_nodes)
 		        #self.draw_points(draw_line_between_points(environment_rand_point, ktree.data[n]), 10, 'clean_map_updated.png', 'clean_map_updated.png')
-                        break
+		  
 
-                #check if goal is acheivable:
-                print("nearest to end: ", nearest_nodes)
-                nearest_nodes = ktree.query(self.dest_clicked_point, 20)[1]
-                for n in nearest_nodes:
-                    if n >= len(ktree.data):
-                        break
-                    if self.check_line(ktree.data[n], self.dest_clicked_point, False):
-                        print ("Got goal")
-                        self.TREE[tuple(self.dest_clicked_point)]= Node(self.TREE[tuple(ktree.data[n])], self.dest_clicked_point)
-                        (self.TREE[tuple(self.dest_clicked_point)]).nextNodes.append(self.TREE[tuple(self.dest_clicked_point)])
-                        self.check_line(ktree.data[n], self.dest_clicked_point, True)
-                        break
+		    #check if goal is acheiva
 
-                #print(self.NODES)
+			nearest_nodes = ktree.query(self.dest_clicked_point, 20)[1]
+			for n in nearest_nodes:
+				if n >= len(ktree.data):
+					break
+				if self.check_line(ktree.data[n], self.dest_clicked_point, False):
+					print ("Got goal")
+					self.TREE[tuple(self.dest_clicked_point)]= Node(self.TREE[tuple(ktree.data[n])], self.dest_clicked_point)
+					(self.TREE[tuple(self.dest_clicked_point)]).nextNodes.append(self.TREE[tuple(self.dest_clicked_point)])
+					self.check_line(ktree.data[n], self.dest_clicked_point, True)
+					break
+				print(self.NODES)
 
 		#neig_idx = knn_search(enviroment_rand_point,self.all_nodes,1)
 
@@ -391,10 +506,10 @@ class ranfdom(QDialog):
 		
 		rand_point_visible = self.generate_point(environment_rand_point, point_size)
 		# print(len(rand_point_visible))
-		self.draw_points(rand_point_visible, node_color, CLEAN_MAP_UPDATED, CLEAN_MAP_UPDATED)
+		self.draw_points(rand_point_visible, node_color, 'clean_map_updated.png', 'clean_map_updated.png')
 
 		# #render
-		self.label.setPixmap(QPixmap(CLEAN_MAP_UPDATED))
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
 
 	def getPos(self , event):
 		#create a point set, which gets added to image.
@@ -414,9 +529,9 @@ class ranfdom(QDialog):
 			self.START_POINT = self.generate_point(clicked_point, 5)
 			self.append_points(goal_posts, self.START_POINT)
 			self.append_points(goal_posts, self.DEST_POINT)	
-			#print("START_POINT ", self.START_POINT)
-			#print("goal_posts", len(goal_posts))
-			#print("starting")
+			print("START_POINT ", self.START_POINT)
+			print("goal_posts", len(goal_posts))
+			print("starting")
 
 		#draw point at destination position
 		if(self.radioButton_2.isChecked()):
@@ -426,10 +541,47 @@ class ranfdom(QDialog):
 			self.append_points(goal_posts, self.DEST_POINT)
 			print("destination")
 
-		self.draw_points(goal_posts,100, os.path.join(UIPATH, "clean_map_simple.png"), CLEAN_MAP_UPDATED)
-		self.label.setPixmap(QPixmap(CLEAN_MAP_UPDATED))
+		self.draw_points(goal_posts,100,"clean_map_simple.png", "clean_map_updated.png")
+		self.label.setPixmap(QPixmap('clean_map_updated.png'))
+
+
+
+	def getPosFromDestPublisher(data):
+		#create a point set, which gets added to image.
+		#includes both start and destination points
+		goal_posts = []
+
+		#call back click event gives coordinates of clicked point
+		# x = event.pos().x()
+		# y = event.pos().y()
+
+		# clicked_point = [x,y]
+
+		print("x: ",data.data[0], "y: ", data.data[1])
+
+		# #draw point at start position
+		# if(self.radioButton.isChecked()):
+		# 	self.start_clicked_point = #clicked_point
+		# 	self.START_POINT = self.generate_point(clicked_point, 5)
+		# 	self.append_points(goal_posts, self.START_POINT)
+		# 	self.append_points(goal_posts, self.DEST_POINT)	
+		# 	print("START_POINT ", self.START_POINT)
+		# 	print("goal_posts", len(goal_posts))
+		# 	print("starting")
+
+		# #draw point at destination position
+		# if(self.radioButton_2.isChecked()):
+		# 	self.dest_clicked_point = clicked_point
+		# 	self.DEST_POINT = self.generate_point(clicked_point, 10)
+		# 	self.append_points(goal_posts, self.START_POINT)
+		# 	self.append_points(goal_posts, self.DEST_POINT)
+		# 	print("destination")
+
+		# self.draw_points(goal_posts,100,"clean_map_simple.png", "clean_map_updated.png")
+		# self.label.setPixmap(QPixmap('clean_map_updated.png'))
 
 		
+
 
 
 # select point randomly from current points in set
@@ -466,10 +618,61 @@ class ranfdom(QDialog):
 
 
 
-app=QApplication(sys.argv)
-widget=ranfdom()
-widget.show()
-sys.exit(app.exec_())
+
+
+
+# def receiving_from_schueduler(data):
+# 	print(data)
+
+def destination_recieved(data):
+	# print("data in")
+	# gui_object = ranfdom()
+	print("coord from scheduler ", data.data)
+
+def current_position_recieved(data):
+	print("in")
+	print("amcl data",data.pose.pose.position)
+	print()
+	print("x ", data.pose.pose.position.x, "y ", data.pose.pose.position.y )
+
+	# draw_points_g(goal_posts,100,"clean_map_simple.png", "clean_map_updated.png")
+	# 	self.label.setPixmap(QPixmap('clean_map_updated.png'))
+
+
+
+
+
+
+        # rate.sleep()
+
+
+#f = [34,78, 986, 678, 567576, 567]
+
+#ranslate_from(f)
+		
+
+
+
+
+if __name__ == '__main__':
+    try:
+    
+
+    	
+
+    	app=QApplication(sys.argv)
+    	widget=ranfdom()
+    	widget.show()
+    	sys.exit(app.exec_())
+    	
+
+
+
+    except rospy.ROSInterruptException:
+        pass
+
+
+
 
 
 
@@ -515,4 +718,3 @@ sys.exit(app.exec_())
 #
 #find all points between point 1 x and point 2 x with set size of 1
 #color all points
-

@@ -19,7 +19,7 @@ base_data = Twist()
 MOVE = True
 pub = rospy.Publisher('cmd_vel', Twist, queue_size=100)
 DIRECTIONS = []
-WAYPOINT_BOUNDARY = 2
+WAYPOINT_BOUNDARY = 6
 ON_PATH = True
 HEADING_TOLERANCE = 0.15
 AVOIDING = False
@@ -218,9 +218,6 @@ def moveBot (data):
         message.data = onedDirection
         routePublisher.publish(message)
 
-    crash = False
-    ON_PATH = True
-
 
     if MOVE and (not (AMCL == None)) and (not (DEST == None)):
         #print ("i'm moving yo")
@@ -261,7 +258,7 @@ def moveBot (data):
             onedDirection = []
             for d in DIRECTIONS:
                 onedDirection.append(d[0])
-                onedDirection.append(d[1])
+                onedDirection.append(527-d[1])
            # print onedDirection
             message = Float32MultiArray()
             message.data = onedDirection
@@ -306,12 +303,12 @@ def moveBot (data):
                 #ON_PATH=False
             else:
                 #print ('press on')
-                #if farLeftDetecting:
-                #    base_data.angular.z=-0.7
-                #elif farRightDetecting:
-                #    base_data.angular.z=0.7
-                #else:
-                base_data.angular.z=0
+                if farLeftDetecting:
+                    base_data.angular.z=-0.7
+                elif farRightDetecting:
+                    base_data.angular.z=0.7
+                else:
+                    base_data.angular.z=0
                 base_data.linear.x=VELOCITY
 
     else:

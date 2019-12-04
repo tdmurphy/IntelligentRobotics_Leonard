@@ -1,4 +1,4 @@
-LG04:545 196
+LG04:88 330
 Main Robotics Lab:136 307
 Robotics Lab:79 330
 Medical Imaging:127 418
