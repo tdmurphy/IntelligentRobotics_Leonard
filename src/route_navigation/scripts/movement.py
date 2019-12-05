@@ -13,16 +13,17 @@ import sys
 #constants
 VELOCITY = 0.4
 ANGULAR_VEL = 0.2
-DETECTING_RANGE = 0.6
+DETECTING_RANGE = 0.65
 GRANULARITY = 19
 base_data = Twist()
 MOVE = True
 pub = rospy.Publisher('cmd_vel', Twist, queue_size=100)
 DIRECTIONS = []
-WAYPOINT_BOUNDARY = 6
+WAYPOINT_BOUNDARY = 8
 ON_PATH = True
 HEADING_TOLERANCE = 0.15
 AVOIDING = False
+AVOIDINGSTEPS = 5
 AMCL = None
 DEST = None
 TURNED_LEFT = False
@@ -168,7 +169,7 @@ def checkInBoundary(p1, p2):
     return dist<=WAYPOINT_BOUNDARY
 
 def moveBot (data):
-    global AVOIDING, ON_PATH, DIRECTIONS, TURNED_LEFT, MOVE
+    global AVOIDING, AVOIDINGSTEPS, ON_PATH, DIRECTIONS, TURNED_LEFT, MOVE
 
     thresholds = np.full(len(data.data), DETECTING_RANGE)
     zipped = zip(data.data, thresholds)
@@ -181,19 +182,26 @@ def moveBot (data):
     farRightReadings = zipped[increment*4:]
 
     farLeftDetecting = False
+    farLeftSum = 0
     frontLeftDetecting = False
+    frontLeftSum = 0
     midDetecting = False
     frontRightDetecting = False
+    frontRightSum = 0
     farRightDetecting = False
+    farRightSum = 0
     frontRightCrash = False
 
+
     for (x,y) in farLeftReadings:
-        if(x<=0.4):
+        if(x<=0.5):
             farLeftDetecting = True
+            farLeftSum += x
 
     for (x,y) in frontLeftReadings:
         if(x<=y):
             frontLeftDetecting = True
+            frontLeftSum += x
 
     for (x,y) in midReadings:
         if(x<=y):
@@ -202,10 +210,12 @@ def moveBot (data):
     for (x,y) in frontRightReadings:
         if(x<=y):
             frontRightDetecting = True
+            frontRightSum += x
 
     for (x,y) in farRightReadings:
-        if(x<=0.4):
+        if(x<=0.5):
             farRightDetecting = True
+            farRightSum += x
 
     crash = frontLeftDetecting or midDetecting or frontRightDetecting
 
@@ -234,7 +244,7 @@ def moveBot (data):
             if (not AVOIDING) or crash:
                 base_data.linear.x=0
                 if abs(base_data.angular.z) == 0:
-                    if not frontLeftDetecting or not farLeftDetecting:
+                    if (frontLeftSum + farLeftSum) > (farRightSum + frontRightSum):
                         base_data.angular.z = 0.6
                         TURNED_LEFT = True
                         #print('turning left')
@@ -244,12 +254,18 @@ def moveBot (data):
                         #print('turning right')
                 AVOIDING = True
             else:
-                if (TURNED_LEFT and not farRightDetecting) or ((not TURNED_LEFT) and not farLeftDetecting):
+               # if (TURNED_LEFT and not farLeftDetecting) or ((not TURNED_LEFT) and not farRightDetecting):
+               #     AVOIDING = False
+               #     base_data.linear.x=0
+               # else:
+               #     base_data.angular.z=0
+               #     base_data.linear.x=VELOCITY/1.5
+               if AVOIDINGSTEPS > 0:
+                   base_data.linear.x=VELOCITY
+                   AVOIDINGSTEPS -= 1
+               else:
                     AVOIDING = False
-                    base_data.linear.x=0
-                else:
-                    base_data.angular.z=0
-                    base_data.linear.x=VELOCITY/1.5
+                    AVOIDINGSTEPS = 5
             
             
             #avoidObst()
