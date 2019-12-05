@@ -204,6 +204,13 @@ def checkPoint(point):
 
 def check_line(start, end):
     print(start, end, "chck")
+
+    if(end[0] == start[0]):
+       for y in range (start[1], end[1]):
+           if OCCUPANCY[start[0]][y] == 1:
+               return False
+       return True
+
     y_step = float(end[1] - start[1])/float(end[0] - start[0])
     y_counter = float (0)
 
