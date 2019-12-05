@@ -35,7 +35,10 @@ LAST_HEADING = None
 routePublisher = rospy.Publisher('/route_nodes', Float32MultiArray, queue_size=100)
 
 def stopSubscriber(data):
-    MOVE = data
+    if (data == "stop"):
+        MOVE = False
+    elif (data == "start"):
+        MOVE = True
 
 def getHeading2(q):
     """
@@ -217,6 +220,7 @@ def moveBot (data):
         message = Float32MultiArray()
         message.data = onedDirection
         routePublisher.publish(message)
+        MOVE = True
 
 
     if MOVE and (not (AMCL == None)) and (not (DEST == None)):
@@ -307,6 +311,8 @@ def moveBot (data):
                     base_data.angular.z=-0.7
                 elif farRightDetecting:
                     base_data.angular.z=0.7
+                elif not abs(getHeading(AMCL, DIRECTIONS[0], HEADING)) <= HEADING_TOLERANCE - 0.1:
+                    base_data.angular.z=1*np.sign(getHeading(AMCL, DIRECTIONS[0], HEADING))/4
                 else:
                     base_data.angular.z=0
                 base_data.linear.x=VELOCITY
