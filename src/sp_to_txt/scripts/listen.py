@@ -31,11 +31,11 @@ def processAudio():
 				shouldListen = False
 			except sr.WaitTimeoutError:
 				rospy.loginfo("Listen time exceeded...")
-				processedAudio.publish("")
+				processedAudio.publish(" ")
 				shouldListen = False
 			except sr.UnknownValueError:
 				rospy.loginfo("Empty text - Could not recognise utterance")
-				processedAudio.publish("")
+				processedAudio.publish(" ")
 				shouldListen = False
 			except sr.RequestError as e:
 				rospy.loginfo("Could not request results from Google Speech Recognition Service; {0}".format(e))

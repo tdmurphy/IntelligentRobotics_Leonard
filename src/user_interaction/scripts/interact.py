@@ -130,7 +130,7 @@ def createMsgTask(response):
             waitUntilDone(response.query_result.fulfillment_text)
 
             request = " "
-            while request != " ":
+            while request == " ":
             	request = waitForMessage()
             	processedSpeech = ""
 
@@ -143,7 +143,7 @@ def createMsgTask(response):
     waitUntilDone("Is this correct?")
 
     confirmation = " "
-    while confirmation != " ":
+    while confirmation == " ":
     	confirmation = waitForMessage()
     	processedSpeech = ""
 
@@ -185,7 +185,7 @@ def createPkgTask(response):
             waitUntilDone(response.query_result.fulfillment_text)
 
             request = " "
-            while request != " ":
+            while request == " ":
             	request = waitForMessage()
             	processedSpeech = ""
 
@@ -196,7 +196,7 @@ def createPkgTask(response):
     waitUntilDone("Is this correct?")
 
     confirmation = " "
-    while confirmation != " ":
+    while confirmation == " ":
     	confirmation = waitForMessage()
     	processedSpeech = ""
 
@@ -222,9 +222,11 @@ def listenForCommand():
     if not delivering and not justDelivered:
 
     	text = waitForMessage()
+    	print (text)
     	processedSpeech = ""
 
     	if "leonard" in text.lower():
+    		print(1)
         	beginConversation("Hello")
     elif justDelivered:
     	justDelivered = False
@@ -238,6 +240,7 @@ def beginConversation(opener):
     stopPublisher.publish("stop")
     
     if opener == "Hello":
+    	print(2)
     	response = sendToDialogflow(opener)
     	waitUntilDone(response.query_result.fulfillment_text)
     else:
@@ -246,7 +249,7 @@ def beginConversation(opener):
     processedSpeech = ""
 
     request = " "
-    while request != " ":
+    while request == " ":
     	request = waitForMessage()
     	processedSpeech = ""
 
