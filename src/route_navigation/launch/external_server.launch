@@ -1,0 +1,5 @@
+<launch>
+	<include file="/data/private/robot/catkin_ws/src/user_interaction/launch/user_interaction.launch" />
+	<include file="/data/private/robot/catkin_ws/src/scheduler/launch/scheduler.launch" />
+</launch>
+	

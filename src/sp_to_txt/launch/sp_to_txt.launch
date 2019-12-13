@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="sp_to_txt" type="listen.py" name="speech_recogition" output="screen" />
+</launch>

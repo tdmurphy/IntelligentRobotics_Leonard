@@ -25,7 +25,7 @@ class PFLocaliser(PFLocaliserBase):
         self.ODOM_DRIFT_NOISE=1
  
         # ----- Sensor model parameters
-        self.NUMBER_PREDICTED_READINGS = 200     # Number of readings to predict
+        self.NUMBER_PREDICTED_READINGS = 80     # Number of readings to predict
         self.plotted=False
 	self.errorList=np.asarray([])
 	self.count=0
@@ -49,10 +49,10 @@ class PFLocaliser(PFLocaliserBase):
         for num in range (0,self.NUMBER_PREDICTED_READINGS):
             p= Pose()	#initialising pose
 
-            xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.8)	#noise calculations
-            yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.8)
+            xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.1)	#noise calculations
+            yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.1)
             zNoise=0
-            random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.8)
+            random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.1)
 
             p.position.x=initialpose.pose.pose.position.x + xNoise		#pose positions+noise
             p.position.y=initialpose.pose.pose.position.y + yNoise
@@ -125,15 +125,16 @@ class PFLocaliser(PFLocaliserBase):
 			#print("0.95")
 			#print("0.95 ",p.position.x)
 		else:
-			xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,2)	#with a small probability generate a sample further away to deal with the kidnapped robot problem
-            		yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,2)
+			xNoise=self.ODOM_TRANSLATION_NOISE*np.random.normal(0,0.5)	#with a small probability generate a sample further away to deal with the kidnapped robot problem
+            		yNoise=self.ODOM_DRIFT_NOISE*np.random.normal(0,0.5)
             		zNoise=0
-            		random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.5)
+            		random_angular_noise=self.ODOM_ROTATION_NOISE*np.random.normal(0,0.3)
 
-            		p.position.x=sampled_particle.position.x + xNoise		#pose positions+noise
-            		p.position.y=sampled_particle.position.y + yNoise
-            		p.position.z=sampled_particle.position.z + zNoise
-            		p.orientation=rotateQuaternion(sampled_particle.orientation,random_angular_noise)
+            		p.position.x=sampled_particle.position.x# + xNoise		#pose positions+noise
+            		p.position.y=sampled_particle.position.y #+ yNoise
+            		p.position.z=sampled_particle.position.z #+ zNoise
+            		p.orientation=rotateQuaternion(sampled_particle.orientation,0)#random_angular_noise)
+			
 			#print("0.05")
 			#print("0.05 ",p.position.x)
 		#print("Appending to new_PC ",p.position.x)
@@ -151,6 +152,8 @@ class PFLocaliser(PFLocaliserBase):
 
     def get_estimate(self,arr,eps_val): #given the data and eps_val (needed for DBSCAN), finds the largest cluster, the particles in it, and finds/returns the average position and heading
     	clustering = DBSCAN(eps=eps_val, min_samples=2).fit(arr)
+	#clustering=KMeans(n_clusters=3,precompute_distances=True).fit(arr)
+	#clustering=AffinityPropagation(affinity='euclidean',preference=None,damping=0.5).fit(arr)
     	largest=self.largest_cluster(clustering.labels_)
     	points=self.getPoints(largest,clustering.labels_,arr)
 	q_list=np.asarray([])
@@ -168,6 +171,9 @@ class PFLocaliser(PFLocaliserBase):
 	
     def get_arrow_directions(self,arr,eps_val):  #given the data and the eps_val, gets the headings of each particle and returns the directional data
 	clustering = DBSCAN(eps=eps_val, min_samples=2).fit(arr)
+	#clustering=KMeans(n_clusters=3,precompute_distances=True).fit(arr)
+	#clustering=AffinityPropagation(affinity='euclidean',preference=None,damping=0.5).fit(arr)
+	
     	largest=self.largest_cluster(clustering.labels_)
     	points=self.getPoints(largest,clustering.labels_,arr)
 	q_list=np.asarray([])
@@ -192,7 +198,10 @@ class PFLocaliser(PFLocaliserBase):
 
     def plotError(self):
 	print("ERROR GRAPH!")
-	py.scatter(np.asarray([i for i in range(1,len(self.errorList)+1)]),self.errorList)
+	py.plot(np.asarray([i for i in range(1,len(self.errorList)+1)]),self.errorList)
+	print(self.errorList)
+	py.xlabel('Iteration')
+	py.ylabel('Error')
 	py.show(block=False)
 	py.savefig("error_graph.png")
 	self.plotted=True
@@ -218,8 +227,10 @@ class PFLocaliser(PFLocaliserBase):
 	mean_point,q_mean=self.get_estimate(pos_clustering,eps_val)
 	#print(pos_clustering)
 	py.quiver(mean_point[0],mean_point[1],np.cos(getHeading(q)),np.sin(getHeading(q)),color='red')	#plot mean	
+	py.xlabel('x')
+	py.ylabel('y')
 	py.show(block=False)
-	py.savefig("pose_graph.png")
+	py.savefig("pose_graph_DBSCAN.png")
 	self.plotted=True	
 
     def estimate_pose(self):
@@ -254,6 +265,8 @@ class PFLocaliser(PFLocaliserBase):
 	eps_val=np.sort(distances[:,1])[len(pos_clustering)-3]		
 	
 	clusters=DBSCAN(eps=eps_val, min_samples=2).fit(pos_clustering)  #run DBSCAN to get the clusters
+	#clusters=AffinityPropagation(affinity='euclidean',preference=None,damping=0.5).fit(pos_clustering)
+	#clusters=KMeans(n_clusters=3,precompute_distances=True).fit(pos_clustering)
 	mean_point, q=self.get_estimate(pos_clustering,eps_val)         # get the average position and quaternion from the largest cluster from DBSCAN
 
 	p=Pose()
@@ -265,12 +278,14 @@ class PFLocaliser(PFLocaliserBase):
 
 	error=self.getError(p)
 	self.errorList=np.concatenate((self.errorList,np.asarray([error])),axis=0)
-	if(len(self.errorList)==30):
+	if(len(self.errorList)==50):
 		self.plotError()
 
-	if (self.plotted==False and self.count==5):    
-		self.plotArrows(eps_val,pos_clustering,q)
+	#if (self.plotted==False and self.count==2):    
+		#self.plotArrows(eps_val,pos_clustering,q)
 	self.count+=1
+	print("Length of cloud",len(self.particlecloud.poses))
+	print("Estimated pose",p)
         return p
 
 

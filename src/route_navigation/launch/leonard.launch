@@ -1,0 +1,34 @@
+<launch>
+	
+		<!-- route_nav nodes -->
+		<include file="/data/private/robot/catkin_ws/src/assignment1/launch/laser.launch" />
+		<node pkg="route_navigation" type="movement.py" name="Mover" output="screen" />
+
+		<!-- OUR NODES CHILDLAUNCHES -->
+		<include file="/data/private/robot/catkin_ws/src/pf_localisation/launch/localisation.launch" />
+		<include file="/data/private/robot/catkin_ws/src/user_interaction/launch/user_interaction.launch" />
+		<include file="/data/private/robot/catkin_ws/src/txt_to_sp/launch/txt_to_sp.launch" />
+		<include file="/data/private/robot/catkin_ws/src/scheduler/launch/scheduler.launch" />
+		<include file="/data/private/robot/catkin_ws/src/face_vision/launch/face_vision.launch" />
+		<include file="/data/private/robot/catkin_ws/src/package_vision/package_vision/laser.launch" />
+
+		<!-- robot essential packages-->
+		<include file="//data/private/ros/socspioneer/p2os_laser.launch" />
+		
+		
+	<staticText>
+		<!-- fake packages and simulation-->
+		<node pkg="route_navigation" type="fake_scheduler.py" name="fake_scheduler" output="screen" />
+	
+
+		<!-- local host start sequence-->
+		export ROS_HOSTNAME=localhost
+		export ROS_MASTER_URI=http://localhost:11311
+		cd catkin_ws
+		source devel/setup.bash
+		cd src
+		roslaunch route_navigation leonard.launch
+	</staticText>
+
+	
+</launch> 

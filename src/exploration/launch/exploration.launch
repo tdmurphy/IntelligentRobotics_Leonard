@@ -1,0 +1,16 @@
+<launch>
+
+	<include file="/data/private/robot/catkin_ws/src/assignment1/launch/laser.launch" />
+	
+
+
+
+
+
+
+	</staticText> 	
+		<node pkg="pf_localisation" type="node.py" name="pf_localisation" output="screen" />
+	</staticText> 	
+
+
+</launch>

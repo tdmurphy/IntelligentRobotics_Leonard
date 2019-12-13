@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="user_interaction" type="interact.py" name="interaction" output="screen" />
+</launch>

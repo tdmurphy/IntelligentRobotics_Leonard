@@ -13,7 +13,7 @@ destination_publisher = rospy.Publisher('/route_nodes',Float32MultiArray,queue_s
 rate = rospy.Rate(1) #3htz
 while not rospy.is_shutdown():
 	x = Float32MultiArray()
-	x.data = [20,45, 20,280, 30,90]
+	x.data = [300,30, 300,60, 300,90]
 	destination_publisher.publish(x)
 	rate.sleep()
 
